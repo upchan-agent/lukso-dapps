@@ -1,13 +1,16 @@
 #!/usr/bin/env node
 /**
  * Update UP metadata (LSP3 Profile)
+ * 
+ * Since v1.1.0: Merges with existing metadata by default.
+ * Use --replace flag for full replacement (legacy behavior).
  */
 import { readFile } from 'fs/promises';
 import { ethers } from 'ethers';
 import { DappCommand, buildUpExecute } from '../../lib/core/command.js';
 import { DATA_KEYS } from '../../lib/core/constants.js';
 import { uploadToPinata, uploadJsonToPinata } from '../../lib/shared/pinata.js';
-import { buildVerifiableUri, fetchFromIpfs } from '../../lib/shared/metadata.js';
+import { buildVerifiableUri, fetchFromIpfs, fetchJsonFromIpfs } from '../../lib/shared/metadata.js';
 
 class UpdateProfileCommand extends DappCommand {
   async build({ args, credentials }) {
@@ -17,15 +20,18 @@ class UpdateProfileCommand extends DappCommand {
     }
 
     const jsonFile = args.json;
-    const useBuilder = !jsonFile && (args.name || args.description);
+    const replaceMode = args.replace === true;
+    const useBuilder = !jsonFile && (args.name || args.description || args.tags || args.image || args.background || args.avatar || args.links);
+    
     if (!jsonFile && !useBuilder) {
-      throw new Error('--json or --name/--description is required');
+      throw new Error('--json or at least one field (--name/--description/--tags/--image/--background/--avatar/--links) is required');
     }
 
     console.log('🆙 Update UP metadata');
     console.log('======================');
     console.log(`UP: ${credentials.upAddress}`);
     console.log(`Key: ${key}`);
+    console.log(`Mode: ${replaceMode ? 'Replace (full)' : 'Merge (default)'}`);
     console.log('');
 
     let parsed;
@@ -33,12 +39,36 @@ class UpdateProfileCommand extends DappCommand {
       console.log('📄 Reading JSON metadata...');
       parsed = JSON.parse(await readFile(jsonFile, 'utf8'));
       console.log(' ✓ JSON file:', jsonFile);
+      
+      if (replaceMode) {
+        // Replace mode: Use JSON as-is
+        console.log('⚠️ Replace mode: Using JSON as-is (full replacement)');
+      } else {
+        // Merge mode: Merge with existing metadata
+        console.log('🔄 Merge mode: Merging with existing metadata...');
+        parsed = await this.mergeWithExisting(parsed, key, credentials);
+      }
     } else {
-      console.log('🏗️ Building metadata...');
-      const lsp3Data = {};
-      if (args.name) lsp3Data.name = args.name;
-      if (args.description) lsp3Data.description = args.description;
-      if (args.tags) lsp3Data.tags = args.tags.split(',').map(t => t.trim());
+      // Builder mode: Fetch existing and merge
+      console.log('🔄 Fetching existing metadata...');
+      const existing = await this.fetchExistingMetadata(credentials.upAddress, key);
+      console.log(' ✓ Existing metadata fetched');
+      
+      console.log('🏗️ Building updates...');
+      const lsp3Data = existing[key] || {};
+      
+      if (args.name) {
+        console.log(`  - name: "${args.name}"`);
+        lsp3Data.name = args.name;
+      }
+      if (args.description) {
+        console.log(`  - description: "${args.description}"`);
+        lsp3Data.description = args.description;
+      }
+      if (args.tags) {
+        console.log(`  - tags: [${args.tags}]`);
+        lsp3Data.tags = args.tags.split(',').map(t => t.trim());
+      }
 
       if (args.image) {
         console.log('📤 Uploading profile image...');
@@ -97,6 +127,100 @@ class UpdateProfileCommand extends DappCommand {
     const payload = iface.encodeFunctionData('setData', [DATA_KEYS.LSP3Profile, verifiableUri]);
 
     return { payload, meta: { key, cid } };
+  }
+
+  /**
+   * Fetch existing metadata from chain
+   */
+  async fetchExistingMetadata(upAddress, key) {
+    const { provider } = await this.getProvider();
+    const iface = new ethers.Interface(['function getData(bytes32 key) view returns (bytes)']);
+    const data = await provider.call({
+      to: upAddress,
+      data: iface.encodeFunctionData('getData', [DATA_KEYS[key]])
+    });
+    
+    if (data === '0x' || data === '0x0') {
+      // 既存データなし：空オブジェクトを返す
+      return {};
+    }
+    
+    // ABI デコードして VerifiableURI を取得
+    let verifiableUri;
+    try {
+      const decoded = iface.decodeFunctionResult('getData', data);
+      verifiableUri = decoded[0];
+    } catch (e) {
+      console.log('⚠️ ABI decode failed, using raw data');
+      verifiableUri = data;
+    }
+    
+    const uri = this.extractUriFromVerifiableUri(verifiableUri);
+    if (!uri) {
+      console.log('⚠️ Could not extract URI from:', verifiableUri.slice(0, 50) + '...');
+      return {};
+    }
+    
+    console.log('  - Existing URI:', uri);
+    return await fetchJsonFromIpfs(uri);
+  }
+
+  /**
+   * Merge new metadata with existing
+   */
+  async mergeWithExisting(newParsed, key, credentials) {
+    const existing = await this.fetchExistingMetadata(credentials.upAddress, key);
+    
+    if (Object.keys(existing).length === 0) {
+      // No existing data: return as new
+      return newParsed;
+    }
+    
+    // Deep merge
+    const merged = JSON.parse(JSON.stringify(existing));
+    
+    for (const [k, v] of Object.entries(newParsed)) {
+      if (typeof v === 'object' && v !== null && !Array.isArray(v) && merged[k]) {
+        // Recursively merge objects
+        merged[k] = { ...merged[k], ...v };
+      } else {
+        // Overwrite other values
+        merged[k] = v;
+      }
+    }
+    
+    return merged;
+  }
+
+  /**
+   * Get provider from chain config
+   */
+  async getProvider() {
+    const { CHAINS } = await import('../../lib/core/constants.js');
+    const chainConfig = CHAINS.lukso;
+    const provider = new ethers.JsonRpcProvider(chainConfig.rpcUrl);
+    return { provider, chainConfig };
+  }
+
+  /**
+   * Extract URI from VerifiableURI (simplified version)
+   */
+  extractUriFromVerifiableUri(data) {
+    if (!data || data === '0x') return null;
+    
+    // Standard format: 0x00006f357c6a + dataLen(2) + hash(32) + url
+    if (data.startsWith('0x00006f357c6a')) {
+      const urlHex = data.slice(82);
+      return Buffer.from(urlHex, 'hex').toString('utf8');
+    }
+    
+    // Legacy format: 0x6f357c6a + hash + url
+    if (data.startsWith('0x6f357c6a')) {
+      const urlHex = data.slice(74);
+      return Buffer.from(urlHex, 'hex').toString('utf8');
+    }
+    
+    return null;
   }
 
   async buildImageMetadata(filePath, cid, width, height) {

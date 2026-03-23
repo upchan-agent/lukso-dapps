@@ -33,9 +33,9 @@ dapps:
         args: [address, network]
         credentials: true
       update-profile:
-        description: "Update Profile"
+        description: "Update Profile (merge by default, use --replace for full replacement)"
         file: "./dapps/up/update-profile.js"
-        args: [key, json, name, description, tags, image, imageWidth, imageHeight, background, bgWidth, bgHeight, avatar, links, direct, network]
+        args: [key, json, name, description, tags, image, imageWidth, imageHeight, background, bgWidth, bgHeight, avatar, links, replace, direct, network]
         credentials: true
       update-grid:
         description: "Update TheGrid Metadata"

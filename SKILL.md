@@ -1,7 +1,7 @@
 ---
 name: lukso-dapps
 description: An extensible skill for operating blockchain DApps via a Universal Profile (UP). Designed primarily for LUKSO, and easily extendable by adding commands to dapps.yaml. Also supports EVM multichain expansion (chains other than LUKSO are untested).
-version: 1.0.0
+version: 1.1.0
 aliases:
   - lyx
 tags:
@@ -114,6 +114,8 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 | `/lyx up:get-grid` | Get TheGrid metadata (defaults to your own UP if omitted) | ❌ |
 
 > * `tokens transfer` is ✅, while `tokens info` is ❌
+>
+> **Note (v1.1.0+)**: `up:update-profile` merges with existing metadata by default. Only specified fields are updated; others are preserved. Use `--replace` flag for full replacement.
 
 ### Forever Moments (`forever-moments`)
 
@@ -165,15 +167,28 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 
 ### Update Profile
 
+**v1.1.0+ (Merge mode - default):**
+
 ```bash
-# Builder mode
+# Update single field (safe - other fields preserved)
+/lyx up:update-profile --key LSP3Profile --description "New description"
+
+# Update multiple fields
 /lyx up:update-profile --key LSP3Profile \
   --name "🆙chan" \
-  --description "AI assistant" \
-  --image ./photo.png
+  --description "AI assistant"
 
-# JSON input
-/lyx up:update-profile --key LSP3Profile --json profile.json
+# Update with image (requires local file)
+/lyx up:update-profile --key LSP3Profile \
+  --name "🆙chan" \
+  --image ./photo.png
+```
+
+**Full replacement:**
+
+```bash
+# JSON input with --replace flag
+/lyx up:update-profile --key LSP3Profile --json profile.json --replace
 ```
 
 ### Post a Moment
@@ -480,3 +495,44 @@ export DEBUG_LSP25=true
 - **Forever Moments**: https://www.forevermoments.life
 - **Universal Profile Cloud**: https://my.universalprofile.cloud
 - **LUKSO Docs**: https://docs.lukso.tech
+
+---
+
+## Changelog
+
+### v1.1.0 (2026-03-23)
+
+**BEHAVIOR CHANGE**: `up:update-profile` now merges with existing metadata by default.
+
+#### What Changed
+
+| Version | Behavior |
+|---|---|
+| v1.0.0 | Specifying `--description` only → **full replacement** (other fields lost) |
+| v1.1.0+ | Specifying `--description` only → **merge** (other fields preserved) |
+
+#### Why
+
+The v1.0.0 behavior was dangerous and unintuitive: users expected "update" to mean "modify existing", but it actually replaced the entire profile metadata. This led to accidental loss of name, images, links, and tags.
+
+#### Migration
+
+- **Existing scripts using `--json`**: Add `--replace` flag to maintain v1.0.0 behavior
+- **New scripts**: Can safely use single-field updates without worrying about data loss
+
+```bash
+# v1.0.0 legacy (full replacement)
+/lyx up:update-profile --key LSP3Profile --json profile.json --replace
+
+# v1.1.0+ default (merge)
+/lyx up:update-profile --key LSP3Profile --description "New description"
+```
+
+#### New Options
+
+- `--replace`: Enable full replacement mode (v1.0.0 legacy behavior)
+
+### v1.0.0 (Initial Release)
+
+- Initial release with full replacement behavior
+- Commands: `up:*`, `forever-moments:*`, `universal-trust:*`
