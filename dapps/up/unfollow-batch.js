@@ -1,0 +1,92 @@
+#!/usr/bin/env node
+/**
+ * Execute batch unfollow
+ * Uses LSP26 FollowerSystem unfollowBatch
+ * Checks follow status and executes only for addresses that are currently followed
+ */
+import { ethers } from 'ethers';
+import { DappCommand, buildUpExecute } from '../../lib/core/command.js';
+import { CONTRACTS, CHAINS, ABIS } from '../../lib/core/constants.js';
+
+class UnfollowBatchCommand extends DappCommand {
+  async build({ args, credentials, network }) {
+    const targets = args.targets;
+    if (!targets) {
+      throw new Error('--targets is required');
+    }
+
+    const targetAddresses = targets.split(',').map(a => a.trim()).filter(a => a);
+    if (targetAddresses.length === 0) {
+      throw new Error('No target addresses were provided');
+    }
+
+    if (targetAddresses.length > 100) {
+      console.log('⚠️ Warning: More than 100 entries may hit the gas limit');
+    }
+
+    console.log(`🆙 Batch unfollow: ${targetAddresses.length} entries`);
+    targetAddresses.forEach((addr, i) => {
+      console.log(` [${i + 1}] ${addr}`);
+    });
+    console.log('');
+
+    // Check follow status
+    const chainConfig = CHAINS[network] || CHAINS.lukso;
+    const provider = new ethers.JsonRpcProvider(chainConfig.rpcUrl);
+    const lsp26 = new ethers.Contract(CONTRACTS.LSP26, ABIS.LSP26, provider);
+
+    console.log('📋 Checking follow status...');
+    const executeTargets = [];
+    const skipTargets = [];
+
+    // Check in parallel
+    const checkPromises = targetAddresses.map(async (addr) => {
+      try {
+        const isFollowing = await lsp26.isFollowing(credentials.upAddress, addr);
+        return { address: addr, isFollowing };
+      } catch (e) {
+        console.warn(` ⚠️ Failed to check ${addr}: ${e.message.slice(0, 50)}`);
+        return { address: addr, isFollowing: false, error: true };
+      }
+    });
+
+    const results = await Promise.all(checkPromises);
+
+    for (const result of results) {
+      if (result.isFollowing) {
+        executeTargets.push(result.address);
+        console.log(` ✅ ${result.address.slice(0, 10)}... → will execute`);
+      } else {
+        skipTargets.push(result.address);
+        const reason = result.error ? 'check error' : 'not followed';
+        console.log(` ❌ ${result.address.slice(0, 10)}... → skipped (${reason})`);
+      }
+    }
+
+    console.log('');
+    console.log(`Execute: ${executeTargets.length}, Skip: ${skipTargets.length}`);
+    console.log('');
+
+    // Skip if there is nothing to execute
+    if (executeTargets.length === 0) {
+      console.log('⚠️ No targets to execute. Skipping everything.');
+      return { skipExecution: true, meta: { total: targetAddresses.length, executed: 0, skipped: skipTargets.length } };
+    }
+
+    // Batch execute only for executable targets
+    console.log(`🔨 Building transaction... (${executeTargets.length} entries)`);
+    const lsp26Iface = new ethers.Interface(ABIS.LSP26);
+    const data = lsp26Iface.encodeFunctionData('unfollowBatch', [executeTargets]);
+    const payload = buildUpExecute(credentials.upAddress, CONTRACTS.LSP26, data);
+
+    return { payload, meta: { total: targetAddresses.length, executed: executeTargets.length, skipped: skipTargets.length } };
+  }
+
+  onSuccess(result) {
+    const { total, executed, skipped } = result.meta;
+    console.log(`✅ Batch unfollow completed: executed ${executed} / ${total}, skipped ${skipped}`);
+    console.log(`TX: ${result.transactionHash}`);
+    console.log(`Explorer: ${result.explorerUrl}`);
+  }
+}
+new UnfollowBatchCommand().run();

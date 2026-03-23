@@ -1,0 +1,112 @@
+dapps:
+  up:
+    description: Universal Profile Operations (LSP Standard)
+    commands:
+      follow:
+        description: "Follow (LSP26)"
+        file: "./dapps/up/follow.js"
+        args: [target, direct, network]
+        credentials: true
+      unfollow:
+        description: "Unfollow"
+        file: "./dapps/up/unfollow.js"
+        args: [target, direct, network]
+        credentials: true
+      follow-batch:
+        description: "Batch Follow"
+        file: "./dapps/up/follow-batch.js"
+        args: [targets, direct, network]
+        credentials: true
+      unfollow-batch:
+        description: "Batch Unfollow"
+        file: "./dapps/up/unfollow-batch.js"
+        args: [targets, direct, network]
+        credentials: true
+      info:
+        description: "UP Info"
+        file: "./dapps/up/info.js"
+        args: [address, network]
+        credentials: false
+      get-profile:
+        description: "Get Profile (omit --address to use own UP)"
+        file: "./dapps/up/get-profile.js"
+        args: [address, network]
+        credentials: true
+      update-profile:
+        description: "Update Profile"
+        file: "./dapps/up/update-profile.js"
+        args: [key, json, name, description, tags, image, imageWidth, imageHeight, background, bgWidth, bgHeight, avatar, links, direct, network]
+        credentials: true
+      update-grid:
+        description: "Update TheGrid Metadata"
+        file: "./dapps/up/update-grid.js"
+        args: [json, network]
+        credentials: true
+      get-grid:
+        description: "Get TheGrid Metadata (omit --address to use own UP)"
+        file: "./dapps/up/get-grid.js"
+        args: [address, network]
+        credentials: true
+      tokens:
+        description: "Token Operations"
+        file: "./dapps/up/tokens.js"
+        args: [subcommand, token, to, amount, direct, network]
+        credentials: true
+      send-lyx:
+        description: "Send LYX to another address"
+        file: "./dapps/up/send-lyx.js"
+        args: [to, amount, yes, direct, network]
+        credentials: true
+
+  forever-moments:
+    description: Forever Moments (NFT Mint / Collection)
+    commands:
+      mint:
+        description: "Mint a Moment (NFT) - supports images, videos, and audio. Collection defaults to your UP address."
+        file: "./dapps/forever-moments/moment-mint.js"
+        args: [image, video, audio, title, description, collection, tags, yes, direct, network]
+        credentials: true
+      create-collection:
+        description: "Create a new Collection (2-step: deploy + register)"
+        file: "./dapps/forever-moments/collection-create.js"
+        args: [name, image, category, description, yes, direct, network]
+        credentials: true
+      register-up:
+        description: "Register your UP address as a Collection (no deployment needed)"
+        file: "./dapps/forever-moments/collection-register-up.js"
+        args: [type, fee, gating, yes, direct, network]
+        credentials: true
+      charge:
+        description: "Charge LIKES (LYX→LIKES)"
+        file: "./dapps/forever-moments/likes-charge.js"
+        args: [lyx, yes, direct, network]
+        credentials: true
+
+  universal-trust:
+    description: Universal Trust (Agent Registration / Endorsement)
+    commands:
+      endorse:
+        description: "Send Endorsement"
+        file: "./dapps/universal-trust/endorse.js"
+        args: [target, reason, direct, network]
+        credentials: true
+      verify:
+        description: "Verify Registration Status"
+        file: "./dapps/universal-trust/verify.js"
+        args: [address, detailed]
+        credentials: false
+      register:
+        description: "Register New Agent"
+        file: "./dapps/universal-trust/register.js"
+        args: [name, description, metadata-uri, direct, network]
+        credentials: true
+      publish-skills:
+        description: "Publish Skill"
+        file: "./dapps/universal-trust/publish-skills.js"
+        args: [name, content, direct, network]
+        credentials: true
+      read-skills:
+        description: "Read Skills"
+        file: "./dapps/universal-trust/read-skills.js"
+        args: [address, skill-key, network]
+        credentials: false
