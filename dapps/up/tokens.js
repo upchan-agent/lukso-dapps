@@ -14,10 +14,10 @@ class TokensCommand extends DappCommand {
     const rawArgs = process.argv.slice(2);
     const subCommand = rawArgs.find(a => !a.startsWith('--'));
     if (!subCommand) {
-      throw new Error('A subcommand is required
+      throw new Error(`A subcommand is required
 Usage:
  /lyx up tokens info --token 0x...
- /lyx up tokens transfer --token 0x... --to 0x... --amount 100');
+ /lyx up tokens transfer --token 0x... --to 0x... --amount 100`);
     }
 
     const chainConfig = CHAINS[network] || CHAINS.lukso;
