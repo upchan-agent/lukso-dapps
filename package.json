@@ -10,7 +10,8 @@
   },
   "scripts": {},
   "dependencies": {
-    "ethers": "^6.13.4"
+    "ethers": "^6.13.4",
+    "@erc725/erc725.js": "^0.28.2"
   },
   "engines": {
     "node": ">=18.0.0"
