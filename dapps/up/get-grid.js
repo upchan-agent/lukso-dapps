@@ -3,9 +3,17 @@
  * Fetch UP TheGrid metadata (LSP28)
  */
 import { ERC725 } from '@erc725/erc725.js';
-import LSP28Schemas from '@erc725/erc725.js/schemas/LSP28TheGrid.json' with { type: 'json' };
 import { DappCommand } from '../../lib/core/command.js';
 import { CHAINS } from '../../lib/core/index.js';
+
+// LSP28TheGrid schema (manually defined - not available in erc725.js package)
+const LSP28_SCHEMA = [{
+  name: 'LSP28TheGrid',
+  key: '0x724141d9918ce69e6b8afcf53a91748466086ba2c74b94cab43c649ae2ac23ff',
+  keyType: 'Singleton',
+  valueType: 'bytes',
+  valueContent: 'VerifiableURI',
+}];
 
 class GetGridCommand extends DappCommand {
   needsCredentials = true;
@@ -28,7 +36,7 @@ class GetGridCommand extends DappCommand {
 
     console.log('📡 Fetching LSP28 data via erc725.js...');
     const erc725 = new ERC725(
-      LSP28Schemas,
+      LSP28_SCHEMA,
       upAddress,
       chainConfig.rpcUrl,
       { ipfsGateway: 'https://api.universalprofile.cloud/ipfs/' }
