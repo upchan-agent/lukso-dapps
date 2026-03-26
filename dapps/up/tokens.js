@@ -25,6 +25,8 @@ Usage:
 
     if (subCommand === 'info') {
       return await this.buildInfo(args, provider);
+    } else if (subCommand === 'list') {
+      return await this.buildList(args, credentials, provider);
     } else if (subCommand === 'transfer') {
       if (!credentials?.upAddress || !credentials?.privateKey) {
         throw new Error('Credentials are required for transfer');
@@ -50,6 +52,47 @@ Usage:
     console.log(`Total Supply: ${info.totalSupplyDisplay} ${info.symbol}`);
     console.log(`(On-chain: ${info.totalSupplyRaw})`);
 
+    return { skipExecution: true };
+  }
+
+  async buildList(args, credentials, provider) {
+    // address を取得（引数 or credentials）
+    const address = args.address || credentials.upAddress;
+    
+    // Blockscout API を呼び出す
+    const url = `https://explorer.execution.mainnet.lukso.network/api/v2/addresses/${address}/token-balances`;
+    const response = await fetch(url);
+    const data = await response.json();
+    
+    // 結果を表示
+    console.log('🆙 Token Balances');
+    console.log(`Address: ${address}`);
+    console.log('');
+    
+    // LSP7 と LSP8 に分けて表示
+    const lsp7Tokens = data.filter(t => t.token.type === 'LSP7');
+    const lsp8Tokens = data.filter(t => t.token.type === 'LSP8');
+    
+    // LSP7 表示
+    if (lsp7Tokens.length > 0) {
+      console.log('LSP7 Tokens:');
+      lsp7Tokens.forEach(t => {
+        const decimals = parseInt(t.token.decimals) || 18;
+        const value = ethers.formatUnits(t.value, decimals);
+        console.log(`  ${t.token.name} (${t.token.symbol}): ${value}`);
+      });
+      console.log('');
+    }
+    
+    // LSP8 表示
+    if (lsp8Tokens.length > 0) {
+      console.log('LSP8 Tokens (NFTs):');
+      lsp8Tokens.forEach(t => {
+        console.log(`  ${t.token.name} (ID: ${t.token_id})`);
+      });
+      console.log('');
+    }
+    
     return { skipExecution: true };
   }
 

@@ -25,12 +25,17 @@ Examples of commonly used commands:
 # UP operations
 /lyx up:follow --target 0x...
 /lyx up:send-lyx --to 0x... --amount 1.0 --yes
+/lyx up:tokens list
 
 # Forever Moments
 /lyx forever-moments:mint --image ./photo.png --title "My Moment"
 
 # Universal Trust
 /lyx universal-trust:endorse --target 0x... --reason "Great agent!"
+
+# Agent Token Claimer
+/lyx agent-token-claimer:check --token 0x...
+/lyx agent-token-claimer:claim --token 0x...
 ```
 
 See [SKILL.md](./SKILL.md) for the full command list.
@@ -59,7 +64,8 @@ dapps.yaml                # Command definitions
 dapps/
 ├── up/                   # Universal Profile operations
 ├── forever-moments/      # Forever Moments
-└── universal-trust/      # Universal Trust
+├── universal-trust/      # Universal Trust
+└── agent-token-claimer/  # Agent Token Claimer
 lib/
 ├── core/                 # Core libraries (executor, credentials, command, etc.)
 └── shared/               # Shared utilities (pinata, metadata, etc.)

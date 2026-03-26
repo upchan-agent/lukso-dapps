@@ -110,3 +110,52 @@ dapps:
         file: "./dapps/universal-trust/read-skills.js"
         args: [address, skill-key, network]
         credentials: false
+
+  agent-token-claimer:
+    description: Agent Token Claimer (LSP7/LSP8 Token Drops)
+    commands:
+      # Deployment
+      deploy:
+        description: "Deploy a new token drop (interactive by default)"
+        file: "./dapps/agent-token-claimer/deploy.js"
+        args: [type, name, symbol, amount, max, non-divisible, divisible, yes, network]
+        credentials: true
+      
+      # Configuration
+      set-metadata:
+        description: "Set LSP4 metadata (required for NFT drops, recommended for tokens)"
+        file: "./dapps/agent-token-claimer/set-metadata.js"
+        args: [token, image, description, network]
+        credentials: true
+      set-claim-enabled:
+        description: "Enable or disable claiming"
+        file: "./dapps/agent-token-claimer/set-claim-enabled.js"
+        args: [token, enabled, yes, network]
+        credentials: true
+      set-claim-window:
+        description: "Set claim time window (start/end time)"
+        file: "./dapps/agent-token-claimer/set-claim-window.js"
+        args: [token, claim-start, claim-end, yes, network]
+        credentials: true
+      set-requirements:
+        description: "Set token and follower requirements"
+        file: "./dapps/agent-token-claimer/set-requirements.js"
+        args: [token, require-token, followers, yes, network]
+        credentials: true
+      set-codeword:
+        description: "Set or clear codeword"
+        file: "./dapps/agent-token-claimer/set-codeword.js"
+        args: [token, codeword, yes, network]
+        credentials: true
+      
+      # Claiming
+      check:
+        description: "Check token drop eligibility and claim status"
+        file: "./dapps/agent-token-claimer/check.js"
+        args: [token, address, network]
+        credentials: false
+      claim:
+        description: "Claim tokens from a drop (requires eligibility)"
+        file: "./dapps/agent-token-claimer/claim.js"
+        args: [token, codeword, network]
+        credentials: true

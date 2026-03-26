@@ -101,12 +101,14 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 
 | Command | Description | TX |
 |---|---|---|
+| `/lyx up:tokens list` | List all token balances | ❌ |
+| `/lyx up:tokens info` | Get token information | ❌ |
+| `/lyx up:tokens transfer` | Transfer tokens | ✅ |
 | `/lyx up:follow` | Follow (single) | ✅ |
 | `/lyx up:unfollow` | Unfollow (single) | ✅ |
 | `/lyx up:follow-batch` | Batch follow | ✅ |
 | `/lyx up:unfollow-batch` | Batch unfollow | ✅ |
 | `/lyx up:send-lyx` | Send LYX | ✅ |
-| `/lyx up:tokens` | Token info / transfer | Depends on subcommand* |
 | `/lyx up:update-profile` | Update profile | ✅ |
 | `/lyx up:update-grid` | Update TheGrid metadata | ✅ |
 | `/lyx up:info` | Display UP information | ❌ |
@@ -138,9 +140,20 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 
 ---
 
+### Agent Token Claimer (`agent-token-claimer`)
+
+| Command | Description | TX |
+|---|---|---|
+| `/lyx agent-token-claimer:check` | Check token drop eligibility and claim status | ❌ |
+| `/lyx agent-token-claimer:claim` | Claim tokens from a drop (requires eligibility) | ✅ |
+
+---
+
 ## Usage
 
-### Follow
+### UP Operations (`up`)
+
+#### Follow
 
 ```bash
 # Single
@@ -153,7 +166,7 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 /lyx up:follow --target 0x... --network base
 ```
 
-### Send LYX
+#### Send LYX
 
 > **Required permissions**: `TRANSFERVALUE` + AllowedCalls (the recipient address must be registered), or `SUPER_TRANSFERVALUE` (can send to any address)
 
@@ -165,7 +178,7 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 /lyx up:send-lyx --to 0x... --amount 1.0 --yes
 ```
 
-### Update Profile
+#### Update Profile
 
 **v1.1.0+ (Merge mode - default):**
 
@@ -191,23 +204,17 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 /lyx up:update-profile --key LSP3Profile --json profile.json --replace
 ```
 
-### Post a Moment
+#### List Tokens
 
 ```bash
-/lyx forever-moments:mint --image ./photo.png --title "My Moment" --description "Amazing!"
+# List your tokens
+/lyx up:tokens list
+
+# List specific address tokens
+/lyx up:tokens list --address 0x...
 ```
 
-### Register a UP as a Collection
-
-```bash
-# Confirmation mode
-/lyx forever-moments:register-up --type 1 --fee 0 --gating false
-
-# Execute
-/lyx forever-moments:register-up --type 1 --fee 0 --gating false --yes
-```
-
-### Transfer Tokens
+#### Transfer Tokens
 
 ```bash
 # Transfer
@@ -217,7 +224,7 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 /lyx up:tokens info --token 0x...
 ```
 
-### View Profile
+#### View Profile
 
 ```bash
 # Your own UP (`--address` can be omitted)
@@ -227,7 +234,7 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 /lyx up:get-profile --address 0x...
 ```
 
-### TheGrid Operations
+#### Get/Update Grid
 
 ```bash
 # Your own UP (`--address` can be omitted)
@@ -235,9 +242,36 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 
 # Specify another address
 /lyx up:get-grid --address 0x...
+
+# Update TheGrid metadata
+/lyx up:update-grid --json grid.json
 ```
 
-### Universal Trust
+> For metadata format, see [TheGrid Metadata Format](#thegrid-metadata-format)
+
+---
+
+### Forever Moments (`forever-moments`)
+
+#### Post a Moment
+
+```bash
+/lyx forever-moments:mint --image ./photo.png --title "My Moment" --description "Amazing!"
+```
+
+#### Register a UP as a Collection
+
+```bash
+# Confirmation mode
+/lyx forever-moments:register-up --type 1 --fee 0 --gating false
+
+# Execute
+/lyx forever-moments:register-up --type 1 --fee 0 --gating false --yes
+```
+
+---
+
+### Universal Trust (`universal-trust`)
 
 ```bash
 # Register an agent
@@ -258,6 +292,25 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 # Read skills (specific skill)
 /lyx universal-trust:read-skills --address 0x... --skill-key 0x...
 ```
+
+---
+
+### Agent Token Claimer (`agent-token-claimer`)
+
+#### Check and Claim Tokens
+
+```bash
+# Step 1: Check eligibility (read-only)
+/lyx agent-token-claimer:check --token 0xD95446D689e9DA102c2E0e6E2AaaCDCc94887333
+
+# Step 2: Claim if eligible
+/lyx agent-token-claimer:claim --token 0xD954...7333
+
+# Claim with codeword
+/lyx agent-token-claimer:claim --token 0x... --codeword "secret"
+```
+
+> **Note**: Always run `claim:check` first to verify eligibility before executing `claim:claim`.
 
 ---
 
