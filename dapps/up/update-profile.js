@@ -7,10 +7,12 @@
  */
 import { readFile } from 'fs/promises';
 import { ethers } from 'ethers';
+import { ERC725 } from '@erc725/erc725.js';
+import LSP3Schemas from '@erc725/erc725.js/schemas/LSP3ProfileMetadata.json' with { type: 'json' };
 import { DappCommand, buildUpExecute } from '../../lib/core/command.js';
 import { DATA_KEYS } from '../../lib/core/constants.js';
 import { uploadToPinata, uploadJsonToPinata } from '../../lib/shared/pinata.js';
-import { buildVerifiableUri, fetchFromIpfs, fetchJsonFromIpfs } from '../../lib/shared/metadata.js';
+import { buildVerifiableUri, fetchFromIpfs } from '../../lib/shared/metadata.js';
 
 class UpdateProfileCommand extends DappCommand {
   async build({ args, credentials }) {
@@ -130,39 +132,25 @@ class UpdateProfileCommand extends DappCommand {
   }
 
   /**
-   * Fetch existing metadata from chain
+   * Fetch existing metadata from chain using erc725.js
    */
   async fetchExistingMetadata(upAddress, key) {
-    const { provider } = await this.getProvider();
-    const iface = new ethers.Interface(['function getData(bytes32 key) view returns (bytes)']);
-    const data = await provider.call({
-      to: upAddress,
-      data: iface.encodeFunctionData('getData', [DATA_KEYS[key]])
-    });
+    const { chainConfig } = await this.getProvider();
     
-    if (data === '0x' || data === '0x0') {
-      // 既存データなし：空オブジェクトを返す
-      return {};
-    }
-    
-    // ABI デコードして VerifiableURI を取得
-    let verifiableUri;
     try {
-      const decoded = iface.decodeFunctionResult('getData', data);
-      verifiableUri = decoded[0];
-    } catch (e) {
-      console.log('⚠️ ABI decode failed, using raw data');
-      verifiableUri = data;
-    }
-    
-    const uri = this.extractUriFromVerifiableUri(verifiableUri);
-    if (!uri) {
-      console.log('⚠️ Could not extract URI from:', verifiableUri.slice(0, 50) + '...');
+      const erc725 = new ERC725(
+        LSP3Schemas,
+        upAddress,
+        chainConfig.rpcUrl,
+        { ipfsGateway: 'https://api.universalprofile.cloud/ipfs/' }
+      );
+      
+      const profile = await erc725.fetchData('LSP3Profile');
+      return profile.value.LSP3Profile || {};
+    } catch (error) {
+      console.log('⚠️ erc725.js fetchData failed:', error.message);
       return {};
     }
-    
-    console.log('  - Existing URI:', uri);
-    return await fetchJsonFromIpfs(uri);
   }
 
   /**
@@ -200,27 +188,6 @@ class UpdateProfileCommand extends DappCommand {
     const chainConfig = CHAINS.lukso;
     const provider = new ethers.JsonRpcProvider(chainConfig.rpcUrl);
     return { provider, chainConfig };
-  }
-
-  /**
-   * Extract URI from VerifiableURI (simplified version)
-   */
-  extractUriFromVerifiableUri(data) {
-    if (!data || data === '0x') return null;
-    
-    // Standard format: 0x00006f357c6a + dataLen(2) + hash(32) + url
-    if (data.startsWith('0x00006f357c6a')) {
-      const urlHex = data.slice(82);
-      return Buffer.from(urlHex, 'hex').toString('utf8');
-    }
-    
-    // Legacy format: 0x6f357c6a + hash + url
-    if (data.startsWith('0x6f357c6a')) {
-      const urlHex = data.slice(74);
-      return Buffer.from(urlHex, 'hex').toString('utf8');
-    }
-    
-    return null;
   }
 
   async buildImageMetadata(filePath, cid, width, height) {

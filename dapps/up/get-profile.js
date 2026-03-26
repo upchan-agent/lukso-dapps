@@ -3,9 +3,10 @@
  * Display UP profile (LSP3)
  */
 import { ethers } from 'ethers';
+import { ERC725 } from '@erc725/erc725.js';
+import LSP3Schemas from '@erc725/erc725.js/schemas/LSP3ProfileMetadata.json' with { type: 'json' };
 import { DappCommand } from '../../lib/core/command.js';
 import { CHAINS, ABIS, DATA_KEYS } from '../../lib/core/index.js';
-import { extractUriFromVerifiableUri, fetchJsonFromIpfs } from '../../lib/shared/metadata.js';
 
 class GetProfileCommand extends DappCommand {
   needsCredentials = true;
@@ -35,15 +36,20 @@ class GetProfileCommand extends DappCommand {
       return { skipExecution: true };
     }
 
-    const uri = extractUriFromVerifiableUri(verifiableUri);
-    console.log(' ✓ URI:', uri);
+    // Use erc725.js to fetch and decode LSP3Profile
+    const erc725 = new ERC725(
+      LSP3Schemas,
+      upAddress,
+      chainConfig.rpcUrl,
+      { ipfsGateway: 'https://api.universalprofile.cloud/ipfs/' }
+    );
 
-    console.log('📥 Fetching metadata...');
-    const metadata = await fetchJsonFromIpfs(uri);
+    console.log('📥 Fetching metadata via erc725.js...');
+    const profile = await erc725.fetchData('LSP3Profile');
+    const lsp3 = profile.value.LSP3Profile;
     console.log(' ✓ Done');
     console.log('');
 
-    const lsp3 = metadata.LSP3Profile;
     if (!lsp3) {
       throw new Error('LSP3Profile key not found in metadata');
     }
@@ -89,7 +95,7 @@ class GetProfileCommand extends DappCommand {
 
     console.log('');
     console.log('🔗 URI:');
-    console.log(` ${uri}`);
+    console.log(` ${lsp3.url || '(not available)'}`);
 
     return { skipExecution: true };
   }
