@@ -553,6 +553,42 @@ export DEBUG_LSP25=true
 
 ## Changelog
 
+### v1.2.0 (2026-03-26)
+
+**NEW**: `up:tokens list` command added.
+
+#### New Features
+
+- **`/lyx up:tokens list`** - List all token balances for an address
+  - Fetches data from LUKSO Blockscout API
+  - Displays LSP7 tokens (name, symbol, balance)
+  - Displays LSP8 tokens (NFTs, name, token ID)
+  - Optional `--address` flag (defaults to your UP)
+
+#### Usage
+
+```bash
+# List your tokens
+/lyx up:tokens list
+
+# List specific address tokens
+/lyx up:tokens list --address 0x...
+```
+
+#### Example Output
+
+```
+🆙 Token Balances
+Address: 0xbcA4eEBea76926c49C64AB86A527CC833eFa3B2D
+
+LSP7 Tokens:
+  Law Token ($LAW): 10000.0
+  Just a Potato 🥔 (POTATO): 4359.0
+
+LSP8 Tokens (NFTs):
+  Forever Moments (ID: 13758...)
+```
+
 ### v1.1.0 (2026-03-23)
 
 **BEHAVIOR CHANGE**: `up:update-profile` now merges with existing metadata by default.
