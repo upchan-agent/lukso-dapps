@@ -57,7 +57,7 @@ class UpdateProfileCommand extends DappCommand {
       console.log(' ✓ Existing metadata fetched');
       
       console.log('🏗️ Building updates...');
-      const lsp3Data = existing[key] || {};
+      const lsp3Data = existing;
       
       if (args.name) {
         console.log(`  - name: "${args.name}"`);
