@@ -31,51 +31,17 @@ Based on LUKSO's Universal Profile, this skill supports a wide range of DApp ope
 
 ## Confirmation Mode
 
-**All TX commands (marked with ✅ in the TX column) require the `--yes` flag for execution.**
+**All TX commands (marked with ✅) require `--yes` flag for execution.**
 
-### How It Works
+| Default (no `--yes`) | With `--yes` |
+|---------------------|--------------|
+| Shows confirmation prompt | Executes immediately |
 
-**Default behavior (without `--yes` flag):**
-```bash
-/lyx up:follow --target 0x...
-```
-→ Displays operation details and shows confirmation prompt:
-```
-⚠️ Please review the details. To execute, run again with --yes flag:
-   /lyx up:follow --target 0x... --yes
-```
+**Commands requiring `--yes`:**
+- All commands with ✅ in TX column (see [Command List](#command-list))
+- Including: `up:follow`, `up:tokens transfer`, `up:send-lyx`, `forever-moments:mint`, etc.
 
-**Execution mode (with `--yes` flag):**
-```bash
-/lyx up:follow --target 0x... --yes
-```
-→ Executes the transaction immediately.
-
-### Commands Requiring `--yes` Flag
-
-**UP Operations:**
-- `up:follow`, `up:unfollow`, `up:follow-batch`, `up:unfollow-batch`
-- `up:update-profile`, `up:update-grid`
-- `up:tokens transfer`, `up:send-lyx`
-
-**Forever Moments:**
-- `forever-moments:mint`, `forever-moments:create-collection`
-- `forever-moments:register-up`, `forever-moments:charge`
-
-**Universal Trust:**
-- `universal-trust:endorse`, `universal-trust:register`, `universal-trust:publish-skills`
-
-**Agent Token Claimer:**
-- `agent-token-claimer:deploy`, `agent-token-claimer:claim`
-- `agent-token-claimer:set-metadata`, `agent-token-claimer:set-claim-enabled`
-- `agent-token-claimer:set-claim-window`, `agent-token-claimer:set-requirements`
-- `agent-token-claimer:set-codeword`
-
-### Read-Only Commands (No `--yes` Required)
-
-- `up:info`, `up:get-profile`, `up:get-grid`, `up:tokens list`, `up:tokens info`
-- `universal-trust:verify`, `universal-trust:read-skills`
-- `agent-token-claimer:check`
+**Read-only commands (❌ in TX column) do not require `--yes`.**
 
 ---
 
@@ -370,8 +336,9 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 
 ## TheGrid Metadata Format
 
-Metadata format for LSP28 TheGrid (in English, aligned with the official specification):
+See [LSP28 TheGrid Specification](https://github.com/lukso-network/LIPs/blob/main/LSPs/LSP-28-TheGrid.md) for the full metadata format.
 
+Basic example:
 ```json
 {
   "LSP28TheGrid": [
@@ -393,86 +360,6 @@ Metadata format for LSP28 TheGrid (in English, aligned with the official specifi
   ]
 }
 ```
-
-### Main Grid Properties
-
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `title` | string | ✅ | Display name for the grid |
-| `gridColumns` | number | ✅ | Number of columns (recommended: 2–4) |
-| `visibility` | string | - | `public` or `private` (default: `public`) |
-| `grid` | array | ✅ | Array of grid items |
-
-### Grid Item Properties
-
-| Property | Type | Required | Description |
-|---|---|---|---|
-| `width` | number | ✅ | Item width in grid units (recommended: 1–3) |
-| `height` | number | ✅ | Item height in grid units (recommended: 1–3) |
-| `type` | string | ✅ | Item type: `IFRAME`, `TEXT`, `IMAGES`, or custom |
-| `properties` | object | ✅ | Type-specific properties |
-
-### Supported Item Types
-
-#### IFRAME
-
-```json
-{
-  "type": "IFRAME",
-  "properties": {
-    "src": "https://example.com",
-    "allow": "accelerometer; autoplay",
-    "sandbox": "allow-scripts",
-    "allowfullscreen": true,
-    "referrerpolicy": "no-referrer"
-  }
-}
-```
-
-#### TEXT
-
-```json
-{
-  "type": "TEXT",
-  "properties": {
-    "title": "My Title",
-    "titleColor": "#000000",
-    "text": "Description text",
-    "textColor": "#333333",
-    "backgroundColor": "#ffffff",
-    "backgroundImage": "https://image.jpg",
-    "link": "https://example.com"
-  }
-}
-```
-
-#### IMAGES
-
-```json
-{
-  "type": "IMAGES",
-  "properties": {
-    "type": "grid",
-    "images": ["https://image1.jpg", "https://image2.jpg"]
-  }
-}
-```
-
-#### Custom Types (X, Instagram, QR_CODE, etc.)
-
-```json
-{
-  "type": "X",
-  "properties": {
-    "type": "post",
-    "username": "username",
-    "id": "1234567890",
-    "theme": "light"
-  }
-}
-```
-
-> **Note**: For the full specification, see [LSP28 TheGrid](https://github.com/lukso-network/LIPs/blob/main/LSPs/LSP-28-TheGrid.md)
 
 ---
 
@@ -607,6 +494,8 @@ export DEBUG_LSP25=true
 
 ## Changelog
 
+See [GitHub Releases](https://github.com/upchan-agent/lukso-dapps/releases) for full changelog.
+
 ### v1.3.1 (2026-03-27)
 
 Confirmation mode bug fixes
@@ -614,11 +503,6 @@ Confirmation mode bug fixes
 #### Bug Fixes
 - Added `--yes` flag requirement to all TX commands (confirmation mode by default)
 - Fixed syntax error in set-metadata.js (duplicate variable declaration)
-
-#### Improvements
-- Added confirmation prompt before executing blockchain transactions
-- Updated dapps.yaml with `yes` argument for 11 commands
-- Updated documentation (README.md, SKILL.md)
 
 #### Breaking Changes
 - All TX commands now require `--yes` flag for immediate execution
@@ -628,88 +512,13 @@ Confirmation mode bug fixes
 LSP3Profile and LSP28TheGrid fetching using erc725.js
 
 #### Changes
-- Migrated `up:get-profile` to use erc725.js `fetchData()` for reliable LSP3Profile fetching
-- Migrated `up:update-profile` to use erc725.js for metadata operations
-- Migrated `up:get-grid` to use erc725.js `fetchData()` for LSP28TheGrid fetching
+- Migrated `up:get-profile`, `up:update-profile`, `up:get-grid` to use erc725.js
 - Added `@erc725/erc725.js` ^0.28.2 dependency
-- Removed deprecated `createLSP4MetadataLegacy()` function
-
-#### Breaking Changes
-- None (internal implementation only)
-
-#### Migration
-- No migration required (backward compatible)
-- Existing commands work the same way
 
 ### v1.2.0 (2026-03-26)
 
-`up:tokens list` command added.
+`up:tokens list` command added
 
 #### New Features
-
-- **`/lyx up:tokens list`** - List all token balances for an address
-  - Fetches data from LUKSO Blockscout API
-  - Displays LSP7 tokens (name, symbol, balance)
-  - Displays LSP8 tokens (NFTs, name, token ID)
-  - Optional `--address` flag (defaults to your UP)
-
-#### Usage
-
-```bash
-# List your tokens
-/lyx up:tokens list
-
-# List specific address tokens
-/lyx up:tokens list --address 0x...
-```
-
-#### Example Output
-
-```
-🆙 Token Balances
-Address: 0xbcA4eEBea76926c49C64AB86A527CC833eFa3B2D
-
-LSP7 Tokens:
-  Law Token ($LAW): 10000.0
-  Just a Potato 🥔 (POTATO): 4359.0
-
-LSP8 Tokens (NFTs):
-  Forever Moments (ID: 13758...)
-```
-
-### v1.1.0 (2026-03-23)
-
-**BEHAVIOR CHANGE**: `up:update-profile` now merges with existing metadata by default.
-
-#### What Changed
-
-| Version | Behavior |
-|---|---|
-| v1.0.0 | Specifying `--description` only → **full replacement** (other fields lost) |
-| v1.1.0+ | Specifying `--description` only → **merge** (other fields preserved) |
-
-#### Why
-
-The v1.0.0 behavior was dangerous and unintuitive: users expected "update" to mean "modify existing", but it actually replaced the entire profile metadata. This led to accidental loss of name, images, links, and tags.
-
-#### Migration
-
-- **Existing scripts using `--json`**: Add `--replace` flag to maintain v1.0.0 behavior
-- **New scripts**: Can safely use single-field updates without worrying about data loss
-
-```bash
-# v1.0.0 legacy (full replacement)
-/lyx up:update-profile --key LSP3Profile --json profile.json --replace
-
-# v1.1.0+ default (merge)
-/lyx up:update-profile --key LSP3Profile --description "New description"
-```
-
-#### New Options
-
-- `--replace`: Enable full replacement mode (v1.0.0 legacy behavior)
-
-### v1.0.0 (Initial Release)
-
-- Initial release with full replacement behavior
-- Commands: `up:*`, `forever-moments:*`, `universal-trust:*`
+- List all token balances for an address (LSP7 and LSP8)
+- Fetches data from LUKSO Blockscout API

@@ -26,92 +26,34 @@ This skill requires the following dependencies:
 
 ## Quick Start
 
-Examples of commonly used commands:
+Examples of commonly used commands (see [SKILL.md](./SKILL.md) for full details):
 
 ```bash
-# UP operations (confirmation mode by default)
-/lyx up:follow --target 0x...                    # Shows confirmation prompt
-/lyx up:follow --target 0x... --yes              # Execute immediately
-/lyx up:send-lyx --to 0x... --amount 1.0 --yes   # Execute immediately
-/lyx up:tokens list                              # Read-only, no confirmation
-
-# Transfer tokens
-/lyx up:tokens transfer --token 0x... --to 0x... --amount 100        # Confirmation
-/lyx up:tokens transfer --token 0x... --to 0x... --amount 100 --yes  # Execute
-
-# Forever Moments (confirmation mode by default)
-/lyx forever-moments:mint --image ./photo.png --title "My Moment"           # Confirmation
-/lyx forever-moments:mint --image ./photo.png --title "My Moment" --yes     # Execute
-
-# Universal Trust (confirmation mode by default)
-/lyx universal-trust:endorse --target 0x... --reason "Great agent!"         # Confirmation
-/lyx universal-trust:endorse --target 0x... --reason "Great agent!" --yes   # Execute
-
-# Agent Token Claimer
-/lyx agent-token-claimer:check --token 0x...                     # Read-only
-/lyx agent-token-claimer:claim --token 0x...                     # Confirmation
-/lyx agent-token-claimer:claim --token 0x... --yes               # Execute
-```
-
-See [SKILL.md](./SKILL.md) for the full command list.
-
----
-
-## UP Operations (`up`)
-
-| Command | Description | TX |
-|---------|-------------|-----|
-| `/lyx up:get-profile` | Get profile metadata (LSP3) | ❌ |
-| `/lyx up:update-profile` | Update profile metadata (LSP3) | ✅ |
-| `/lyx up:get-grid` | Get TheGrid metadata (LSP28) | ❌ |
-| `/lyx up:update-grid` | Update TheGrid metadata (LSP28) | ✅ |
-
----
-
-## Profile Operations
-
-### Get Profile
-
-```bash
-# Your own UP
+# Read-only commands (no --yes required)
+/lyx up:tokens list
 /lyx up:get-profile
+/lyx agent-token-claimer:check --token 0x...
 
-# Specific address
-/lyx up:get-profile --address 0x...
+# TX commands require --yes flag
+/lyx up:follow --target 0x... --yes
+/lyx up:send-lyx --to 0x... --amount 1.0 --yes
+/lyx up:tokens transfer --token 0x... --to 0x... --amount 100 --yes
 ```
 
-### Update Profile
+> **Note**: All TX commands require `--yes` flag for execution. See [Confirmation Mode](./SKILL.md#confirmation-mode) for details.
 
-```bash
-# Merge mode (default) - confirmation required
-/lyx up:update-profile --key LSP3Profile --description "New description"
+---
 
-# Execute immediately
-/lyx up:update-profile --key LSP3Profile --description "New description" --yes
+## Command Overview
 
-# Full replacement
-/lyx up:update-profile --key LSP3Profile --json profile.json --replace --yes
-```
+| Namespace | Description | TX Commands |
+|-----------|-------------|-------------|
+| `up` | Universal Profile operations | follow, unfollow, send-lyx, tokens transfer, update-profile, update-grid |
+| `forever-moments` | NFT minting | mint, create-collection, register-up, charge |
+| `universal-trust` | Agent registration | register, endorse, publish-skills |
+| `agent-token-claimer` | Token claiming | claim, deploy, set-* commands |
 
-### Get TheGrid
-
-```bash
-# Your own UP
-/lyx up:get-grid
-
-# Specific address
-/lyx up:get-grid --address 0x...
-```
-
-### Update TheGrid
-
-```bash
-# Confirmation required (default)
-/lyx up:update-grid --json grid.json
-
-# Execute immediately
-/lyx up:update-grid --json grid.json --yes
-```
+See [SKILL.md](./SKILL.md) for the full command list and usage details.
 
 ---
 
@@ -155,7 +97,7 @@ lib/
 
 ## Related Links
 
-- [SKILL.md](./SKILL.md) - User guide (setup and full command details)
+- [SKILL.md](./SKILL.md) - Full documentation (setup, usage, security)
 - [LUKSO Docs](https://docs.lukso.tech)
 - [Forever Moments](https://www.forevermoments.life)
 
