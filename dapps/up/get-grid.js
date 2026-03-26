@@ -2,10 +2,10 @@
 /**
  * Fetch UP TheGrid metadata (LSP28)
  */
-import { ethers } from 'ethers';
+import { ERC725 } from '@erc725/erc725.js';
+import LSP28Schemas from '@erc725/erc725.js/schemas/LSP28TheGrid.json' with { type: 'json' };
 import { DappCommand } from '../../lib/core/command.js';
-import { CHAINS, ABIS, DATA_KEYS } from '../../lib/core/index.js';
-import { decodeVerifiableURI, fetchJsonFromIpfs } from '../../lib/shared/metadata.js';
+import { CHAINS } from '../../lib/core/index.js';
 
 class GetGridCommand extends DappCommand {
   needsCredentials = true;
@@ -26,44 +26,50 @@ class GetGridCommand extends DappCommand {
     console.log(`Chain: ${chainConfig.name}`);
     console.log('');
 
-    const provider = new ethers.JsonRpcProvider(chainConfig.rpcUrl);
-    const up = new ethers.Contract(upAddress, ABIS.LSP0, provider);
+    console.log('📡 Fetching LSP28 data via erc725.js...');
+    const erc725 = new ERC725(
+      LSP28Schemas,
+      upAddress,
+      chainConfig.rpcUrl,
+      { ipfsGateway: 'https://api.universalprofile.cloud/ipfs/' }
+    );
 
-    console.log('📡 Fetching LSP28 data key...');
-    const rawData = await up.getData(DATA_KEYS.LSP28TheGrid);
+    const grid = await erc725.fetchData('LSP28TheGrid');
+    const lsp28Data = grid.value.LSP28TheGrid;
 
-    if (!rawData || rawData === '0x') {
+    if (!lsp28Data) {
       console.log(' → LSP28 data is not set');
       return { skipExecution: true };
     }
 
-    console.log(' ✓ Raw data:', rawData.slice(0, 40) + '...');
-    console.log(' ✓ Length:', rawData.length, 'bytes');
-    console.log('');
-
-    console.log('🔓 Decoding VerifiableURI...');
-    const decoded = decodeVerifiableURI(rawData);
-
-    if (!decoded) {
-      console.log(' → Decode failed');
-      return { skipExecution: true };
-    }
-
-    if (decoded.hash) {
-      console.log(' ✓ Hash:', decoded.hash);
-      console.log(' ✓ URL:', decoded.url);
-    } else {
-      console.log(' ✓ Raw data:', decoded.raw);
-      return { skipExecution: true };
-    }
-
-    console.log('');
-    console.log('📥 Fetching JSON from IPFS...');
-    const json = await fetchJsonFromIpfs(decoded.url);
-
     console.log('');
     console.log('📋 TheGrid metadata:');
-    console.log(JSON.stringify(json, null, 2));
+    console.log('');
+
+    // Display grid information
+    if (lsp28Data.title) {
+      console.log(`Title: ${lsp28Data.title}`);
+    }
+    if (lsp28Data.columns) {
+      console.log(`Columns: ${lsp28Data.columns}`);
+    }
+    if (lsp28Data.visibility !== undefined) {
+      console.log(`Visibility: ${lsp28Data.visibility}`);
+    }
+
+    // Display grid items
+    if (lsp28Data.items && Array.isArray(lsp28Data.items)) {
+      console.log('');
+      console.log(`Items (${lsp28Data.items.length}):`);
+      lsp28Data.items.forEach((item, index) => {
+        console.log(`  [${index}] Type: ${item.type || 'N/A'}`);
+        if (item.width) console.log(`       Width: ${item.width}`);
+        if (item.height) console.log(`       Height: ${item.height}`);
+        if (item.properties && Object.keys(item.properties).length > 0) {
+          console.log(`       Properties: ${JSON.stringify(item.properties)}`);
+        }
+      });
+    }
 
     return { skipExecution: true };
   }
