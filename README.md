@@ -15,6 +15,13 @@
 **Execution model**: On LUKSO, gasless relay execution is prioritized, with fallback to direct execution on failure. On EVM chains, execution is performed directly from an EOA.  
 **Authentication**: In addition to write commands, `get-profile` and `get-grid` also use credentials (because when omitted, your own UP address is used by default).
 
+### Dependencies
+
+This skill requires the following dependencies:
+
+- `ethers` ^6.13.4
+- `@erc725/erc725.js` ^0.28.2 (for LSP3/LSP28 data fetching)
+
 ---
 
 ## Quick Start
@@ -39,6 +46,51 @@ Examples of commonly used commands:
 ```
 
 See [SKILL.md](./SKILL.md) for the full command list.
+
+---
+
+## UP Operations (`up`)
+
+| Command | Description | TX |
+|---------|-------------|-----|
+| `/lyx up:get-profile` | Get profile metadata (LSP3) | ❌ |
+| `/lyx up:update-profile` | Update profile metadata (LSP3) | ✅ |
+| `/lyx up:get-grid` | Get TheGrid metadata (LSP28) | ❌ |
+| `/lyx up:update-grid` | Update TheGrid metadata (LSP28) | ✅ |
+
+---
+
+## Profile Operations
+
+### Get Profile
+
+```bash
+# Your own UP
+/lyx up:get-profile
+
+# Specific address
+/lyx up:get-profile --address 0x...
+```
+
+### Update Profile
+
+```bash
+# Merge mode (default)
+/lyx up:update-profile --key LSP3Profile --description "New description"
+
+# Full replacement
+/lyx up:update-profile --key LSP3Profile --json profile.json --replace
+```
+
+### Get TheGrid
+
+```bash
+# Your own UP
+/lyx up:get-grid
+
+# Specific address
+/lyx up:get-grid --address 0x...
+```
 
 ---
 

@@ -1,7 +1,7 @@
 ---
 name: lukso-dapps
 description: An extensible skill for operating blockchain DApps via a Universal Profile (UP). Designed primarily for LUKSO, and easily extendable by adding commands to dapps.yaml. Also supports EVM multichain expansion (chains other than LUKSO are untested).
-version: 1.1.0
+version: 1.3.0
 aliases:
   - lyx
 tags:
@@ -552,6 +552,24 @@ export DEBUG_LSP25=true
 ---
 
 ## Changelog
+
+### v1.3.0 (2026-03-26)
+
+**NEW**: LSP3Profile and LSP28TheGrid fetching using erc725.js
+
+#### Changes
+- Migrated `up:get-profile` to use erc725.js `fetchData()` for reliable LSP3Profile fetching
+- Migrated `up:update-profile` to use erc725.js for metadata operations
+- Migrated `up:get-grid` to use erc725.js `fetchData()` for LSP28TheGrid fetching
+- Added `@erc725/erc725.js` ^0.28.2 dependency
+- Removed deprecated `createLSP4MetadataLegacy()` function
+
+#### Breaking Changes
+- None (internal implementation only)
+
+#### Migration
+- No migration required (backward compatible)
+- Existing commands work the same way
 
 ### v1.2.0 (2026-03-26)
 
