@@ -73,6 +73,15 @@ class FollowBatchCommand extends DappCommand {
       return { skipExecution: true, meta: { total: targetAddresses.length, executed: 0, skipped: skipTargets.length } };
     }
 
+    // Check --yes flag for confirmation mode
+    const isConfirmMode = !args.yes;
+    if (isConfirmMode) {
+      console.log('⚠️ Please review the details. To execute, run again with --yes flag:');
+      console.log(` /lyx up:follow-batch --targets ${targets} --yes`);
+      console.log('');
+      return { skipExecution: true };
+    }
+
     // Batch execute only for executable targets
     console.log(`🔨 Building transaction... (${executeTargets.length} entries)`);
     const lsp26Iface = new ethers.Interface(ABIS.LSP26);

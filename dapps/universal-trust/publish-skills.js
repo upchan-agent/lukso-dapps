@@ -34,6 +34,19 @@ class PublishSkillsCommand extends DappCommand {
     console.log('');
 
     console.log('🔨 Building transaction...');
+    console.log('');
+    console.log('  Skill Name:', name);
+    console.log('  Skill Key:', skillKey);
+    console.log('');
+
+    // Check for --yes flag to confirm execution
+    const isConfirmMode = !args.yes;
+    if (isConfirmMode) {
+      console.log('⚠️ Please review the details. To execute, run again with --yes flag:');
+      console.log(` /lyx universal-trust:publish-skills --yes`);
+      console.log('');
+      return { skipExecution: true };
+    }
 
     const registryIface = new ethers.Interface(ABIS.UniversalTrustRegistry);
     const publishData = registryIface.encodeFunctionData('publishSkill', [skillKey, name, content]);

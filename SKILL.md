@@ -1,7 +1,7 @@
 ---
 name: lukso-dapps
 description: An extensible skill for operating blockchain DApps via a Universal Profile (UP). Designed primarily for LUKSO, and easily extendable by adding commands to dapps.yaml. Also supports EVM multichain expansion (chains other than LUKSO are untested).
-version: 1.3.0
+version: 1.3.1
 aliases:
   - lyx
 tags:
@@ -22,9 +22,60 @@ Based on LUKSO's Universal Profile, this skill supports a wide range of DApp ope
 > ⚠️ **Important Instructions for Agents**
 >
 > - **Commands with ✅ in the TX column write to the blockchain and cannot be undone.** Always confirm the details with the user and obtain explicit approval before execution.
+> - **Always ask for explicit confirmation before executing any transaction, even if the user's instruction appears clear.** Present the full details (token, address, amount, etc.) and wait for approval.
 > - If there is any ambiguity about the recipient address, amount, or contract operation, do not execute the command and ask the user to confirm.
 > - Only use the `--yes` flag when the user has reviewed and approved the operation.
 > - The developer assumes no responsibility for any loss or damage resulting from the use of this skill. Any erroneous operation by an agent is also the user's own responsibility.
+
+---
+
+## Confirmation Mode
+
+**All TX commands (marked with ✅ in the TX column) require the `--yes` flag for execution.**
+
+### How It Works
+
+**Default behavior (without `--yes` flag):**
+```bash
+/lyx up:follow --target 0x...
+```
+→ Displays operation details and shows confirmation prompt:
+```
+⚠️ Please review the details. To execute, run again with --yes flag:
+   /lyx up:follow --target 0x... --yes
+```
+
+**Execution mode (with `--yes` flag):**
+```bash
+/lyx up:follow --target 0x... --yes
+```
+→ Executes the transaction immediately.
+
+### Commands Requiring `--yes` Flag
+
+**UP Operations:**
+- `up:follow`, `up:unfollow`, `up:follow-batch`, `up:unfollow-batch`
+- `up:update-profile`, `up:update-grid`
+- `up:tokens transfer`, `up:send-lyx`
+
+**Forever Moments:**
+- `forever-moments:mint`, `forever-moments:create-collection`
+- `forever-moments:register-up`, `forever-moments:charge`
+
+**Universal Trust:**
+- `universal-trust:endorse`, `universal-trust:register`, `universal-trust:publish-skills`
+
+**Agent Token Claimer:**
+- `agent-token-claimer:deploy`, `agent-token-claimer:claim`
+- `agent-token-claimer:set-metadata`, `agent-token-claimer:set-claim-enabled`
+- `agent-token-claimer:set-claim-window`, `agent-token-claimer:set-requirements`
+- `agent-token-claimer:set-codeword`
+
+### Read-Only Commands (No `--yes` Required)
+
+- `up:info`, `up:get-profile`, `up:get-grid`, `up:tokens list`, `up:tokens info`
+- `universal-trust:verify`, `universal-trust:read-skills`
+- `agent-token-claimer:check`
 
 ---
 
@@ -217,8 +268,11 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 #### Transfer Tokens
 
 ```bash
-# Transfer
+# Transfer (confirmation mode - shows details, requires --yes to execute)
 /lyx up:tokens transfer --token 0x... --to 0x... --amount 100
+
+# Execute transfer (with confirmation flag)
+/lyx up:tokens transfer --token 0x... --to 0x... --amount 100 --yes
 
 # Check info
 /lyx up:tokens info --token 0x...
@@ -553,9 +607,25 @@ export DEBUG_LSP25=true
 
 ## Changelog
 
+### v1.3.1 (2026-03-27)
+
+Confirmation mode bug fixes
+
+#### Bug Fixes
+- Added `--yes` flag requirement to all TX commands (confirmation mode by default)
+- Fixed syntax error in set-metadata.js (duplicate variable declaration)
+
+#### Improvements
+- Added confirmation prompt before executing blockchain transactions
+- Updated dapps.yaml with `yes` argument for 11 commands
+- Updated documentation (README.md, SKILL.md)
+
+#### Breaking Changes
+- All TX commands now require `--yes` flag for immediate execution
+
 ### v1.3.0 (2026-03-26)
 
-**NEW**: LSP3Profile and LSP28TheGrid fetching using erc725.js
+LSP3Profile and LSP28TheGrid fetching using erc725.js
 
 #### Changes
 - Migrated `up:get-profile` to use erc725.js `fetchData()` for reliable LSP3Profile fetching
@@ -573,7 +643,7 @@ export DEBUG_LSP25=true
 
 ### v1.2.0 (2026-03-26)
 
-**NEW**: `up:tokens list` command added.
+`up:tokens list` command added.
 
 #### New Features
 

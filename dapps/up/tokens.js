@@ -105,13 +105,22 @@ Usage:
       throw new Error('--token, --to, and --amount are required');
     }
 
+    const info = await this.getTokenInfo(tokenAddress, provider);
+    const isConfirmMode = !args.yes;
+
     console.log('🆙 Token Transfer');
     console.log(`Token: ${tokenAddress}`);
-    const info = await this.getTokenInfo(tokenAddress, provider);
     console.log(`Name: ${info.name} (${info.symbol})`);
     console.log(`To: ${toAddress}`);
     console.log(`Amount: ${amount} ${info.symbol}`);
     console.log('');
+
+    if (isConfirmMode) {
+      console.log('⚠️ Please review the details. To execute, run again with --yes flag:');
+      console.log(` /lyx up:tokens transfer --token ${tokenAddress} --to ${toAddress} --amount ${amount} --yes`);
+      console.log('');
+      return { skipExecution: true };
+    }
 
     console.log('🔨 Building transaction...');
     const token = new ethers.Contract(tokenAddress, ABIS.LSP7, provider);

@@ -138,20 +138,38 @@ class SetMetadataCommand extends DappCommand {
     console.log(`   Payload length: ${data.length} bytes`);
     console.log('');
 
-    // Build payload
-    const payload = buildUpExecute(credentials.upAddress, tokenAddr, data);
-
-    console.log('✅ Ready to set metadata!');
+    console.log('⛓ Writing to blockchain...');
+    
+    // Use UP.execute() directly for proper Activity attribution
+    // This bypasses KeyManager.execute() to ensure UniversalEverything shows UP (not KM) as the actor
+    const wallet = new ethers.Wallet(credentials.privateKey, provider);
+    
+    // Call UP.execute() directly
+    const up = new ethers.Contract(credentials.upAddress, ['function execute(uint8 operation, address target, uint256 value, bytes calldata data) external payable returns (bytes memory)'], wallet);
+    const tx = await up.execute(
+      0,           // operation: CALL
+      tokenAddr,   // target: drop contract
+      0,           // value: no LYX transfer
+      data         // setData calldata
+    );
+    const receipt = await tx.wait();
+    
+    console.log('✅ Metadata set successfully!');
+    console.log(`TX: ${receipt.hash}`);
+    console.log(`Explorer: ${chainConfig.explorerUrl}/tx/${receipt.hash}`);
     console.log('');
-
+    
+    // Skip default execution flow (we already executed)
     return {
-      payload,
+      skipExecution: true,
       meta: {
         tokenAddr,
         imageCid,
         tokenName,
         tokenSymbol,
         description,
+        transactionHash: receipt.hash,
+        explorerUrl: `${chainConfig.explorerUrl}/tx/${receipt.hash}`,
       }
     };
   }

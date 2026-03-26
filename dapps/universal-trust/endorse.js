@@ -24,6 +24,15 @@ class EndorseCommand extends DappCommand {
     console.log(`  Registry: ${CONTRACTS.UNIVERSAL_TRUST_REGISTRY}`);
     console.log('');
 
+    // Check for --yes flag to confirm execution
+    const isConfirmMode = !args.yes;
+    if (isConfirmMode) {
+      console.log('⚠️ Please review the details. To execute, run again with --yes flag:');
+      console.log(` /lyx universal-trust:endorse --yes`);
+      console.log('');
+      return { skipExecution: true };
+    }
+
     const registryIface = new ethers.Interface(ABIS.UniversalTrustRegistry);
     const endorseData = registryIface.encodeFunctionData('endorse', [target, reason]);
 

@@ -13,8 +13,7 @@ class UpdateGridCommand extends DappCommand {
   async build({ args, credentials }) {
     const jsonFile = args.json;
     if (!jsonFile) {
-      throw new Error('--json is required
-Usage: /lyx up update-grid --json grid.json');
+      throw new Error('--json is required\nUsage: /lyx up update-grid --json grid.json');
     }
 
     console.log('🆙 Update UP TheGrid metadata');
@@ -47,18 +46,35 @@ Usage: /lyx up update-grid --json grid.json');
     console.log(' ✓ VerifiableURI:', verifiableUri.slice(0, 20) + '...');
     console.log('');
 
+    // Check --yes flag for confirmation mode
+    const isConfirmMode = !args.yes;
+    if (isConfirmMode) {
+      console.log('⚠️ Please review the details. To execute, run again with --yes flag:');
+      console.log(` /lyx up:update-grid --yes`);
+      console.log('');
+      return { skipExecution: true };
+    }
+
     console.log('⛓ Writing to blockchain...');
-    const iface = new ethers.Interface(['function setData(bytes32 dataKey, bytes data) returns (bool)']);
-    const payload = iface.encodeFunctionData('setData', [DATA_KEYS.LSP28TheGrid, verifiableUri]);
-
-    return { payload, meta: { cid } };
-  }
-
-  onSuccess(result) {
-    console.log('');
+    
+    // Use executeDirectSetData() for proper Activity attribution
+    // This calls UP.setData() directly from controller EOA, bypassing KeyManager.execute()
+    // Ensures UniversalEverything shows UP (not KeyManager) as the actor
+    const { executeDirectSetData } = await import('../../lib/core/executor.js');
+    const result = await executeDirectSetData(
+      DATA_KEYS.LSP28TheGrid,
+      verifiableUri,
+      credentials.privateKey,
+      credentials.upAddress
+    );
+    
     console.log('✅ TheGrid metadata updated successfully!');
-    console.log('TX:', result.transactionHash);
-    console.log('Explorer:', result.explorerUrl);
+    console.log(`TX: ${result.transactionHash}`);
+    console.log(`Explorer: ${result.explorerUrl}`);
+    console.log('');
+    
+    // Skip default execution flow (we already executed)
+    return { skipExecution: true, meta: { ...result, cid } };
   }
 }
 new UpdateGridCommand().run();

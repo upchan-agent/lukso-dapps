@@ -49,6 +49,16 @@ class TemplateCommand extends DappCommand {
       throw new Error('--my-param is required');
     }
 
+    // ⚠️ Confirmation mode (recommended for TX operations)
+    // Add `yes` to dapps.yaml args array to enable this feature
+    const isConfirmMode = !args.yes;
+    if (isConfirmMode) {
+      console.log('⚠️ Please review the details. To execute, run again with --yes flag:');
+      console.log(`   /lyx <namespace>:<command-name> --my-param ${myParam} --yes`);
+      console.log('');
+      return { skipExecution: true };
+    }
+
     console.log(`📝 Executing: ${myParam}`);
 
     // TODO: Set the target contract address

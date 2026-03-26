@@ -36,6 +36,15 @@ class UnfollowCommand extends DappCommand {
     console.log('✅ Currently following → executing');
     console.log('');
 
+    // Check --yes flag for confirmation mode
+    const isConfirmMode = !args.yes;
+    if (isConfirmMode) {
+      console.log('⚠️ Please review the details. To execute, run again with --yes flag:');
+      console.log(` /lyx up:unfollow --target ${target} --yes`);
+      console.log('');
+      return { skipExecution: true };
+    }
+
     const lsp26Iface = new ethers.Interface(ABIS.LSP26);
     const data = lsp26Iface.encodeFunctionData('unfollow', [target]);
     const payload = buildUpExecute(credentials.upAddress, CONTRACTS.LSP26, data);

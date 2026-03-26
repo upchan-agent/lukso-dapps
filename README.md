@@ -29,20 +29,28 @@ This skill requires the following dependencies:
 Examples of commonly used commands:
 
 ```bash
-# UP operations
-/lyx up:follow --target 0x...
-/lyx up:send-lyx --to 0x... --amount 1.0 --yes
-/lyx up:tokens list
+# UP operations (confirmation mode by default)
+/lyx up:follow --target 0x...                    # Shows confirmation prompt
+/lyx up:follow --target 0x... --yes              # Execute immediately
+/lyx up:send-lyx --to 0x... --amount 1.0 --yes   # Execute immediately
+/lyx up:tokens list                              # Read-only, no confirmation
 
-# Forever Moments
-/lyx forever-moments:mint --image ./photo.png --title "My Moment"
+# Transfer tokens
+/lyx up:tokens transfer --token 0x... --to 0x... --amount 100        # Confirmation
+/lyx up:tokens transfer --token 0x... --to 0x... --amount 100 --yes  # Execute
 
-# Universal Trust
-/lyx universal-trust:endorse --target 0x... --reason "Great agent!"
+# Forever Moments (confirmation mode by default)
+/lyx forever-moments:mint --image ./photo.png --title "My Moment"           # Confirmation
+/lyx forever-moments:mint --image ./photo.png --title "My Moment" --yes     # Execute
+
+# Universal Trust (confirmation mode by default)
+/lyx universal-trust:endorse --target 0x... --reason "Great agent!"         # Confirmation
+/lyx universal-trust:endorse --target 0x... --reason "Great agent!" --yes   # Execute
 
 # Agent Token Claimer
-/lyx agent-token-claimer:check --token 0x...
-/lyx agent-token-claimer:claim --token 0x...
+/lyx agent-token-claimer:check --token 0x...                     # Read-only
+/lyx agent-token-claimer:claim --token 0x...                     # Confirmation
+/lyx agent-token-claimer:claim --token 0x... --yes               # Execute
 ```
 
 See [SKILL.md](./SKILL.md) for the full command list.
@@ -75,11 +83,14 @@ See [SKILL.md](./SKILL.md) for the full command list.
 ### Update Profile
 
 ```bash
-# Merge mode (default)
+# Merge mode (default) - confirmation required
 /lyx up:update-profile --key LSP3Profile --description "New description"
 
+# Execute immediately
+/lyx up:update-profile --key LSP3Profile --description "New description" --yes
+
 # Full replacement
-/lyx up:update-profile --key LSP3Profile --json profile.json --replace
+/lyx up:update-profile --key LSP3Profile --json profile.json --replace --yes
 ```
 
 ### Get TheGrid
@@ -90,6 +101,16 @@ See [SKILL.md](./SKILL.md) for the full command list.
 
 # Specific address
 /lyx up:get-grid --address 0x...
+```
+
+### Update TheGrid
+
+```bash
+# Confirmation required (default)
+/lyx up:update-grid --json grid.json
+
+# Execute immediately
+/lyx up:update-grid --json grid.json --yes
 ```
 
 ---

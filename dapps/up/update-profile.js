@@ -123,12 +123,35 @@ class UpdateProfileCommand extends DappCommand {
     console.log(' ✓ VerifiableURI:', verifiableUri.slice(0, 20) + '...');
     console.log('');
 
-    console.log('⛓ Writing to blockchain...');
-    // Use setData directly as the payload
-    const iface = new ethers.Interface(['function setData(bytes32 dataKey, bytes data) returns (bool)']);
-    const payload = iface.encodeFunctionData('setData', [DATA_KEYS.LSP3Profile, verifiableUri]);
+    // Check --yes flag for confirmation mode
+    const isConfirmMode = !args.yes;
+    if (isConfirmMode) {
+      console.log('⚠️ Please review the details. To execute, run again with --yes flag:');
+      console.log(` /lyx up:update-profile --yes`);
+      console.log('');
+      return { skipExecution: true };
+    }
 
-    return { payload, meta: { key, cid } };
+    console.log('⛓ Writing to blockchain...');
+    
+    // Use executeDirectSetData() for proper Activity attribution
+    // This calls UP.setData() directly from controller EOA, bypassing KeyManager.execute()
+    // Ensures UniversalEverything shows UP (not KeyManager) as the actor
+    const { executeDirectSetData } = await import('../../lib/core/executor.js');
+    const result = await executeDirectSetData(
+      DATA_KEYS.LSP3Profile,
+      verifiableUri,
+      credentials.privateKey,
+      credentials.upAddress
+    );
+    
+    console.log('✅ Metadata update completed!');
+    console.log(`TX: ${result.transactionHash}`);
+    console.log(`Explorer: ${result.explorerUrl}`);
+    console.log('');
+    
+    // Skip default execution flow (we already executed)
+    return { skipExecution: true, meta: { ...result, key, cid } };
   }
 
   /**

@@ -2,25 +2,29 @@ dapps:
   up:
     description: Universal Profile Operations (LSP Standard)
     commands:
+      # ⚠️ Requires --yes flag (confirmation mode by default)
       follow:
         description: "Follow (LSP26)"
         file: "./dapps/up/follow.js"
-        args: [target, direct, network]
+        args: [target, yes, direct, network]
         credentials: true
+      # ⚠️ Requires --yes flag (confirmation mode by default)
       unfollow:
         description: "Unfollow"
         file: "./dapps/up/unfollow.js"
-        args: [target, direct, network]
+        args: [target, yes, direct, network]
         credentials: true
+      # ⚠️ Requires --yes flag (confirmation mode by default)
       follow-batch:
         description: "Batch Follow"
         file: "./dapps/up/follow-batch.js"
-        args: [targets, direct, network]
+        args: [targets, yes, direct, network]
         credentials: true
+      # ⚠️ Requires --yes flag (confirmation mode by default)
       unfollow-batch:
         description: "Batch Unfollow"
         file: "./dapps/up/unfollow-batch.js"
-        args: [targets, direct, network]
+        args: [targets, yes, direct, network]
         credentials: true
       info:
         description: "UP Info"
@@ -32,26 +36,30 @@ dapps:
         file: "./dapps/up/get-profile.js"
         args: [address, network]
         credentials: true
+      # ⚠️ Requires --yes flag (confirmation mode by default)
       update-profile:
         description: "Update Profile (merge by default, use --replace for full replacement)"
         file: "./dapps/up/update-profile.js"
-        args: [key, json, name, description, tags, image, imageWidth, imageHeight, background, bgWidth, bgHeight, avatar, links, replace, direct, network]
+        args: [key, json, name, description, tags, image, imageWidth, imageHeight, background, bgWidth, bgHeight, avatar, links, replace, yes, direct, network]
         credentials: true
+      # ⚠️ Requires --yes flag (confirmation mode by default)
       update-grid:
         description: "Update TheGrid Metadata"
         file: "./dapps/up/update-grid.js"
-        args: [json, network]
+        args: [json, yes, network]
         credentials: true
       get-grid:
         description: "Get TheGrid Metadata (omit --address to use own UP)"
         file: "./dapps/up/get-grid.js"
         args: [address, network]
         credentials: true
+      # ⚠️ transfer requires --yes flag (confirmation mode by default)
       tokens:
         description: "Token Operations"
         file: "./dapps/up/tokens.js"
-        args: [subcommand, token, to, amount, direct, network]
+        args: [subcommand, token, to, amount, yes, direct, network]
         credentials: true
+      # ⚠️ Requires --yes flag (confirmation mode by default)
       send-lyx:
         description: "Send LYX to another address"
         file: "./dapps/up/send-lyx.js"
@@ -85,25 +93,28 @@ dapps:
   universal-trust:
     description: Universal Trust (Agent Registration / Endorsement)
     commands:
+      # ⚠️ Requires --yes flag (confirmation mode by default)
       endorse:
         description: "Send Endorsement"
         file: "./dapps/universal-trust/endorse.js"
-        args: [target, reason, direct, network]
+        args: [target, reason, yes, direct, network]
         credentials: true
       verify:
         description: "Verify Registration Status"
         file: "./dapps/universal-trust/verify.js"
         args: [address, detailed]
         credentials: false
+      # ⚠️ Requires --yes flag (confirmation mode by default)
       register:
         description: "Register New Agent"
         file: "./dapps/universal-trust/register.js"
-        args: [name, description, metadata-uri, direct, network]
+        args: [name, description, metadata-uri, yes, direct, network]
         credentials: true
+      # ⚠️ Requires --yes flag (confirmation mode by default)
       publish-skills:
         description: "Publish Skill"
         file: "./dapps/universal-trust/publish-skills.js"
-        args: [name, content, direct, network]
+        args: [name, content, yes, direct, network]
         credentials: true
       read-skills:
         description: "Read Skills"
@@ -122,10 +133,11 @@ dapps:
         credentials: true
       
       # Configuration
+      # ⚠️ Requires --yes flag (confirmation mode by default)
       set-metadata:
         description: "Set LSP4 metadata (required for NFT drops, recommended for tokens)"
         file: "./dapps/agent-token-claimer/set-metadata.js"
-        args: [token, image, description, network]
+        args: [token, image, description, yes, network]
         credentials: true
       set-claim-enabled:
         description: "Enable or disable claiming"
@@ -154,8 +166,9 @@ dapps:
         file: "./dapps/agent-token-claimer/check.js"
         args: [token, address, network]
         credentials: false
+      # ⚠️ Requires --yes flag (confirmation mode by default)
       claim:
         description: "Claim tokens from a drop (requires eligibility)"
         file: "./dapps/agent-token-claimer/claim.js"
-        args: [token, codeword, network]
+        args: [token, codeword, yes, network]
         credentials: true

@@ -44,6 +44,19 @@ class RegisterCommand extends DappCommand {
 
     // Step 2: Register
     console.log('🔨 Step 2: Building register transaction...');
+    console.log('');
+    console.log('  Agent Name:', name);
+    console.log('  UP Address:', credentials.upAddress);
+    console.log('');
+
+    // Check for --yes flag to confirm execution
+    const isConfirmMode = !args.yes;
+    if (isConfirmMode) {
+      console.log('⚠️ Please review the details. To execute, run again with --yes flag:');
+      console.log(` /lyx universal-trust:register --yes`);
+      console.log('');
+      return { skipExecution: true };
+    }
 
     const registryIface = new ethers.Interface(ABIS.UniversalTrustRegistry);
     const registerData = registryIface.encodeFunctionData('register', [name, description, metadataURI]);

@@ -121,6 +121,15 @@ class ClaimCommand extends DappCommand {
     console.log('✅ Ready to claim!');
     console.log('');
 
+    // Check --yes flag for confirmation mode
+    const isConfirmMode = !args.yes;
+    if (isConfirmMode) {
+      console.log('⚠️ Please review the details. To execute, run again with --yes flag:');
+      console.log(`   /lyx agent-token-claimer:claim --token ${tokenAddr} --yes`);
+      console.log('');
+      return { skipExecution: true };
+    }
+
     return {
       payload,
       meta: {

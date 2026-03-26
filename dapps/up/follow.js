@@ -43,6 +43,15 @@ class FollowCommand extends DappCommand {
     console.log('✅ Not following → executing');
     console.log('');
 
+    // Check --yes flag for confirmation mode
+    const isConfirmMode = !args.yes;
+    if (isConfirmMode) {
+      console.log('⚠️ Please review the details. To execute, run again with --yes flag:');
+      console.log(` /lyx up:follow --target ${target} --yes`);
+      console.log('');
+      return { skipExecution: true };
+    }
+
     // Encode LSP26 follow(address)
     const lsp26Iface = new ethers.Interface(ABIS.LSP26);
     const followData = lsp26Iface.encodeFunctionData('follow', [target]);
