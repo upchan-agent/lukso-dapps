@@ -1,7 +1,7 @@
 ---
 name: lukso-dapps
 description: An extensible skill for operating blockchain DApps via a Universal Profile (UP). Designed primarily for LUKSO, and easily extendable by adding commands to dapps.yaml. Also supports EVM multichain expansion (chains other than LUKSO are untested).
-version: 1.3.1
+version: 1.3.2
 aliases:
   - lyx
 tags:
@@ -131,6 +131,8 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 | `/lyx up:info` | Display UP information | ❌ |
 | `/lyx up:get-profile` | Profile details (defaults to your own UP if omitted) | ❌ |
 | `/lyx up:get-grid` | Get TheGrid metadata (defaults to your own UP if omitted) | ❌ |
+| `/lyx up:get-follows` | Get following list (LSP26) | ❌ |
+| `/lyx up:get-followers` | Get followers list (LSP26) | ❌ |
 
 > * `tokens transfer` is ✅, while `tokens info` is ❌
 >
@@ -268,6 +270,19 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 ```
 
 > For metadata format, see [TheGrid Metadata Format](#thegrid-metadata-format)
+
+#### Get Follows/Followers
+
+```bash
+# Get following list
+/lyx up:get-follows --address 0x...
+
+# Get followers list
+/lyx up:get-followers --address 0x...
+
+# With limit (default: 100)
+/lyx up:get-follows --address 0x... --limit 20
+```
 
 ---
 
@@ -495,6 +510,15 @@ export DEBUG_LSP25=true
 ## Changelog
 
 See [GitHub Releases](https://github.com/upchan-agent/lukso-dapps/releases) for full changelog.
+
+### v1.3.2 (2026-03-27)
+
+New LSP26 follow/follower query commands
+
+#### New Features
+- `up:get-follows` - Retrieve following list for any UP address
+- `up:get-followers` - Retrieve followers list for any UP address
+- Extended LSP26 ABI with `followerCount`, `followingCount`, `getFollowsByIndex`, `getFollowersByIndex`
 
 ### v1.3.1 (2026-03-27)
 
