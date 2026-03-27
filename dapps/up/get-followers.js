@@ -4,25 +4,23 @@
  * Retrieves addresses that are following the UP
  * 
  * Usage:
- *   /lyx up:get-followers [--address 0x...] [--network lukso] [--limit 100]
- * 
- * If --address is omitted, uses credentials UP address.
+ *   /lyx up:get-followers --address 0x... [--network lukso] [--limit 100]
  */
 import { ethers } from 'ethers';
 import { DappCommand } from '../../lib/core/command.js';
 import { CHAINS, CONTRACTS, ABIS } from '../../lib/core/constants.js';
 
 class GetFollowersCommand extends DappCommand {
-  needsCredentials = false; // Read-only, no credentials needed
+  needsCredentials = false; // Read-only, no credentials loaded
 
-  async build({ args, credentials }) {
+  async build({ args }) {
     const network = args.network || 'lukso';
     const chainConfig = CHAINS[network] || CHAINS.lukso;
 
-    // If --address is omitted, fall back to credentials UP
-    const upAddress = args.address || credentials?.upAddress;
+    // --address is required (no fallback to credentials)
+    const upAddress = args.address;
     if (!upAddress) {
-      throw new Error('--address is required (or configure credentials)');
+      throw new Error('--address is required');
     }
 
     const limit = parseInt(args.limit) || 100;
