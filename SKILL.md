@@ -1,7 +1,7 @@
 ---
 name: lukso-dapps
 description: An extensible skill for operating blockchain DApps via a Universal Profile (UP). Designed primarily for LUKSO, and easily extendable by adding commands to dapps.yaml. Also supports EVM multichain expansion (chains other than LUKSO are untested).
-version: 1.3.2
+version: 1.3.3
 aliases:
   - lyx
 tags:
@@ -156,6 +156,8 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 | `/lyx universal-trust:publish-skills` | Publish skills | ✅ |
 | `/lyx universal-trust:verify` | Check registration status | ❌ |
 | `/lyx universal-trust:read-skills` | Read skills | ❌ |
+| `/lyx universal-trust:list-agents` | List all registered agents | ❌ |
+| `/lyx universal-trust:get-endorsements` | Get endorsements for address | ❌ |
 
 ---
 
@@ -326,6 +328,12 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 
 # Read skills (specific skill)
 /lyx universal-trust:read-skills --address 0x... --skill-key 0x...
+
+# List all registered agents
+/lyx universal-trust:list-agents
+
+# Get endorsements for an address
+/lyx universal-trust:get-endorsements --address 0x...
 ```
 
 ---
@@ -513,12 +521,17 @@ See [GitHub Releases](https://github.com/upchan-agent/lukso-dapps/releases) for 
 
 ### v1.3.2 (2026-03-27)
 
-New LSP26 follow/follower query commands
+New LSP26 follow/follower query commands and agent list
 
 #### New Features
 - `up:get-follows` - Retrieve following list for any UP address
 - `up:get-followers` - Retrieve followers list for any UP address
 - Extended LSP26 ABI with `followerCount`, `followingCount`, `getFollowsByIndex`, `getFollowersByIndex`
+- `universal-trust:list-agents` - List all registered agents via Blockscout API
+- `universal-trust:get-endorsements` - Get endorsements for any address via Blockscout API
+
+#### Bug Fixes
+- Fixed `publish-skills` returning undefined meta on confirmation mode
 
 ### v1.3.1 (2026-03-27)
 

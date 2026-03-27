@@ -114,6 +114,16 @@ dapps:
         file: "./dapps/universal-trust/verify.js"
         args: [address, detailed]
         credentials: false
+      list-agents:
+        description: "List all registered agents"
+        file: "./dapps/universal-trust/list-agents.js"
+        args: [network]
+        credentials: false
+      get-endorsements:
+        description: "Get endorsements for an address"
+        file: "./dapps/universal-trust/get-endorsements.js"
+        args: [address, network]
+        credentials: false
       # ⚠️ Requires --yes flag (confirmation mode by default)
       register:
         description: "Register New Agent"
