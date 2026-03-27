@@ -26,6 +26,16 @@ dapps:
         file: "./dapps/up/unfollow-batch.js"
         args: [targets, yes, direct, network]
         credentials: true
+      get-follows:
+        description: "Get following list (LSP26)"
+        file: "./dapps/up/get-follows.js"
+        args: [up, network, limit, json]
+        credentials: false
+      get-followers:
+        description: "Get followers list (LSP26)"
+        file: "./dapps/up/get-followers.js"
+        args: [up, network, limit, json]
+        credentials: false
       info:
         description: "UP Info"
         file: "./dapps/up/info.js"
