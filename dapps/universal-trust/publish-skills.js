@@ -45,7 +45,7 @@ class PublishSkillsCommand extends DappCommand {
       console.log('⚠️ Please review the details. To execute, run again with --yes flag:');
       console.log(` /lyx universal-trust:publish-skills --yes`);
       console.log('');
-      return { skipExecution: true };
+      return { skipExecution: true, meta: { name, skillKey } };
     }
 
     const registryIface = new ethers.Interface(ABIS.UniversalTrustRegistry);
