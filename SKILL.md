@@ -165,8 +165,10 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 
 | Command | Description | TX |
 |---|---|---|
-| `/lyx agent-token-claimer:check` | Check token drop eligibility and claim status | ❌ |
+| `/lyx agent-token-claimer:check` | Check eligibility, supply status, and auto-decode codeword | ❌ |
 | `/lyx agent-token-claimer:claim` | Claim tokens from a drop (requires eligibility) | ✅ |
+| `/lyx agent-token-claimer:decode-codeword` | Decode codeword from existing on-chain claims | ❌ |
+| `/lyx agent-token-claimer:auto-check` | Scan all drops for eligibility (for cron) | ❌ |
 
 ---
 
@@ -343,17 +345,31 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 #### Check and Claim Tokens
 
 ```bash
-# Step 1: Check eligibility (read-only)
+# Check eligibility (includes codeword auto-decode)
 /lyx agent-token-claimer:check --token 0xD95446D689e9DA102c2E0e6E2AaaCDCc94887333
 
-# Step 2: Claim if eligible
+# Claim if eligible
 /lyx agent-token-claimer:claim --token 0xD954...7333
 
 # Claim with codeword
 /lyx agent-token-claimer:claim --token 0x... --codeword "secret"
 ```
 
-> **Note**: Always run `claim:check` first to verify eligibility before executing `claim:claim`.
+#### Decode Codeword (Detailed Analysis)
+
+```bash
+# Extract codeword from existing claims
+/lyx agent-token-claimer:decode-codeword --token 0x...
+```
+
+#### Auto-Check (Cron/Periodic Scanning)
+
+```bash
+# Scan all drops for eligibility
+/lyx agent-token-claimer:auto-check --mode check-only --limit 20
+```
+
+> **Note**: `check` auto-decodes codewords if existing claims exist. Use `decode-codeword` for detailed analysis.
 
 ---
 

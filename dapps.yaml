@@ -192,3 +192,15 @@ dapps:
         file: "./dapps/agent-token-claimer/claim.js"
         args: [token, codeword, yes, network]
         credentials: true
+      
+      # Auto-claimer utilities
+      decode-codeword:
+        description: "Decode codeword from existing on-chain claims"
+        file: "./dapps/agent-token-claimer/decode-codeword.js"
+        args: [token, limit, network]
+        credentials: false
+      auto-check:
+        description: "Scan all drops for eligibility (mode: check-only|claim-pending|auto-claim)"
+        file: "./dapps/agent-token-claimer/auto-check.js"
+        args: [mode, limit, network]
+        credentials: true

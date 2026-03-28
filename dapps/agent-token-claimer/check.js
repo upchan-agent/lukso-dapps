@@ -6,6 +6,12 @@
  *   /lyx claim:check --token <address> [--address <up_address>] [--network <network>]
  * 
  * Checks if a token drop contract is claimable and verifies user eligibility.
+ * 
+ * Features:
+ *   - Token info and supply status
+ *   - Claim eligibility check
+ *   - Automatic codeword decoding (if existing claims available)
+ *   - Full/not full status
  */
 
 import { DappCommand, CHAINS, LSP4_DATA_KEYS } from '../../lib/core/index.js';
@@ -16,9 +22,12 @@ import { ethers } from 'ethers';
 // ═══════════════════════════════════════════════════════════
 
 const BLOCKSCOUT_API_BASE = {
-  lukso: 'https://explorer.execution.mainnet.lukso.network/api/v2/tokens',
-  luksoTestnet: 'https://explorer.execution.testnet.lukso.network/api/v2/tokens',
+  lukso: 'https://explorer.execution.mainnet.lukso.network/api/v2',
+  luksoTestnet: 'https://explorer.execution.testnet.lukso.network/api/v2',
 };
+
+// claimWithCode(string) selector
+const CLAIM_WITH_CODE_SELECTOR = 'e602db67';
 
 // Agent Token Claimer Drop ABI
 const DROP_ABI = [
@@ -68,12 +77,37 @@ function decodeLSP4String(dataHex) {
 }
 
 /**
+ * Extract codeword from raw transaction input
+ */
+function extractCodeword(rawInput) {
+  if (!rawInput || rawInput === '0x') return null;
+  
+  const hex = rawInput.startsWith('0x') ? rawInput.slice(2) : rawInput;
+  const claimIdx = hex.indexOf(CLAIM_WITH_CODE_SELECTOR);
+  if (claimIdx === -1) return null;
+  
+  const afterSelector = hex.slice(claimIdx + 8);
+  const afterOffset = afterSelector.slice(64);
+  const lenHex = afterOffset.slice(0, 64).replace(/^0+/, '') || '0';
+  const len = parseInt(lenHex, 16);
+  
+  if (len === 0) return null;
+  
+  const strHex = afterOffset.slice(64, 64 + len * 2);
+  try {
+    return Buffer.from(strHex, 'hex').toString('utf8');
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Fetch token info from Blockscout API
  */
 async function fetchBlockscoutInfo(tokenAddr, network) {
   try {
     const baseUrl = BLOCKSCOUT_API_BASE[network] || BLOCKSCOUT_API_BASE.lukso;
-    const res = await fetch(`${baseUrl}/${tokenAddr}`);
+    const res = await fetch(`${baseUrl}/tokens/${tokenAddr}`);
     if (res.ok) {
       const data = await res.json();
       return {
@@ -103,6 +137,36 @@ async function fetchLSP4Info(tokenAddr, provider) {
     };
   } catch {
     return { name: null, symbol: null };
+  }
+}
+
+/**
+ * Decode codeword from existing on-chain claims
+ * Returns null if no claims exist or decode fails
+ */
+async function decodeCodeword(tokenAddr, network) {
+  const baseUrl = BLOCKSCOUT_API_BASE[network] || BLOCKSCOUT_API_BASE.lukso;
+  
+  try {
+    // Get token transfers (minting transactions)
+    const transfersRes = await fetch(`${baseUrl}/tokens/${tokenAddr}/transfers`);
+    if (!transfersRes.ok) return null;
+    
+    const transfersData = await transfersRes.json();
+    const txHashes = (transfersData.items || [])
+      .map(tx => tx.transaction_hash)
+      .filter(h => h);
+    
+    if (txHashes.length === 0) return null;
+    
+    // Fetch first transaction
+    const txRes = await fetch(`${baseUrl}/transactions/${txHashes[0]}`);
+    if (!txRes.ok) return null;
+    
+    const tx = await txRes.json();
+    return extractCodeword(tx.raw_input);
+  } catch {
+    return null;
   }
 }
 
@@ -148,6 +212,12 @@ class CheckCommand extends DappCommand {
     // Gather drop information
     const dropInfo = await this.gatherDropInfo(drop);
     
+    // Decode codeword if enabled and has existing claims
+    let decodedCodeword = null;
+    if (dropInfo.codewordEnabled && dropInfo.totalClaimers > 0n) {
+      decodedCodeword = await decodeCodeword(tokenAddr, network);
+    }
+    
     // Check personal eligibility
     const upAddr = args['address'] || credentials?.upAddress;
     const eligibility = upAddr && ethers.isAddress(upAddr)
@@ -155,9 +225,17 @@ class CheckCommand extends DappCommand {
       : null;
 
     // Build and print output
-    this.printOutput(tokenAddr, tokenName, tokenSymbol, blockscoutInfo, dropInfo, eligibility, chainConfig.name);
+    this.printOutput(tokenAddr, tokenName, tokenSymbol, blockscoutInfo, dropInfo, eligibility, decodedCodeword, chainConfig.name);
 
-    return { skipExecution: true, meta: { tokenAddr, isDrop: true, ...dropInfo } };
+    return { 
+      skipExecution: true, 
+      meta: { 
+        tokenAddr, 
+        isDrop: true, 
+        decodedCodeword,
+        ...dropInfo 
+      } 
+    };
   }
 
   /**
@@ -165,7 +243,6 @@ class CheckCommand extends DappCommand {
    */
   async isDropContract(contract) {
     try {
-      // Try to call multiple drop-specific methods
       await Promise.all([
         contract.isClaimActive(),
         contract.claimEnabled(),
@@ -180,7 +257,6 @@ class CheckCommand extends DappCommand {
    * Gather all drop contract information
    */
   async gatherDropInfo(drop) {
-    // Check token type first
     const isLSP7 = await drop.decimals().then(() => true).catch(() => false);
     
     const [
@@ -203,7 +279,7 @@ class CheckCommand extends DappCommand {
       drop.requiredFollowers().catch(() => null),
       drop.maxSupply().catch(() => null),
       drop.amountPerClaim().catch(() => null),
-      drop.totalClaimers().catch(() => null),
+      drop.totalClaimers().catch(() => 0n),
       isLSP7 
         ? drop.totalClaimedAmount().catch(() => null)
         : drop.totalClaimed().catch(() => null),
@@ -211,6 +287,9 @@ class CheckCommand extends DappCommand {
       drop.claimEnabled().catch(() => false),
       drop.codewordEnabled().catch(() => false),
     ]);
+
+    // Calculate isFull
+    const isFull = maxSupply !== null && maxSupply > 0n && totalClaimers >= maxSupply;
 
     return {
       isLSP7,
@@ -223,6 +302,7 @@ class CheckCommand extends DappCommand {
       claimActive,
       claimEnabled,
       codewordEnabled,
+      isFull,
     };
   }
 
@@ -276,7 +356,7 @@ class CheckCommand extends DappCommand {
   /**
    * Print full eligibility output
    */
-  printOutput(addr, name, symbol, blockscoutInfo, dropInfo, eligibility, chainName) {
+  printOutput(addr, name, symbol, blockscoutInfo, dropInfo, eligibility, decodedCodeword, chainName) {
     const lines = [];
     
     lines.push('🔍 Token Drop Eligibility');
@@ -296,25 +376,17 @@ class CheckCommand extends DappCommand {
     
     // Supply
     lines.push('📈 Supply');
-    if (blockscoutInfo.totalSupply) {
-      lines.push(`  Total Supply: ${blockscoutInfo.totalSupply}`);
-    } else if (dropInfo.maxSupply !== null && dropInfo.maxSupply > 0n) {
-      lines.push(`  Max Supply: ${dropInfo.maxSupply.toString()}`);
-    } else {
-      lines.push('  Max Supply: Unlimited');
-    }
-    
-    if (dropInfo.totalClaimed !== null) {
-      if (dropInfo.maxSupply !== null && dropInfo.maxSupply > 0n) {
-        const pct = (dropInfo.totalClaimed * 100n) / dropInfo.maxSupply;
-        const remaining = dropInfo.maxSupply - dropInfo.totalClaimed;
-        lines.push(`  Claimed: ${dropInfo.totalClaimed.toString()} (${pct}%)`);
-        lines.push(`  Remaining: ${remaining.toString()}`);
-      } else {
-        lines.push(`  Claimed: ${dropInfo.totalClaimed.toString()}`);
+    if (dropInfo.maxSupply !== null && dropInfo.maxSupply > 0n) {
+      const remaining = dropInfo.maxSupply - dropInfo.totalClaimers;
+      const pct = Number(dropInfo.totalClaimers * 100n / dropInfo.maxSupply);
+      lines.push(`  Max Claimers: ${dropInfo.maxSupply.toString()}`);
+      lines.push(`  Claimers: ${dropInfo.totalClaimers.toString()} / ${dropInfo.maxSupply.toString()} (${pct}%)`);
+      lines.push(`  Remaining: ${remaining.toString()}`);
+      if (dropInfo.isFull) {
+        lines.push(`  Status: ⚠️ FULL`);
       }
-    }
-    if (dropInfo.totalClaimers !== null) {
+    } else {
+      lines.push(`  Max Claimers: Unlimited`);
       lines.push(`  Claimers: ${dropInfo.totalClaimers.toString()}`);
     }
     if (dropInfo.amountPerClaim !== null) {
@@ -327,6 +399,15 @@ class CheckCommand extends DappCommand {
     lines.push(`  Active: ${dropInfo.claimActive ? 'Yes' : 'No'}`);
     lines.push(`  Enabled: ${dropInfo.claimEnabled ? 'Yes' : 'No'}`);
     lines.push(`  Codeword: ${dropInfo.codewordEnabled ? 'Required' : 'Not required'}`);
+    if (dropInfo.codewordEnabled) {
+      if (decodedCodeword) {
+        lines.push(`  Decoded: "${decodedCodeword}"`);
+      } else if (dropInfo.totalClaimers === 0n) {
+        lines.push(`  Decoded: ⚠️ No existing claims (cannot decode)`);
+      } else {
+        lines.push(`  Decoded: ⚠️ Decode failed`);
+      }
+    }
     lines.push('');
     
     // Eligibility
@@ -357,23 +438,40 @@ class CheckCommand extends DappCommand {
     
     // Summary
     const canClaim = dropInfo.claimActive && 
+                     dropInfo.claimEnabled &&
+                     !dropInfo.isFull &&
                      (!eligibility || !eligibility.hasClaimed) && 
                      (!eligibility || eligibility.tokenOk) && 
-                     (!eligibility || eligibility.followersOk);
+                     (!eligibility || eligibility.followersOk) &&
+                     (!dropInfo.codewordEnabled || decodedCodeword);
     
     lines.push('══════════════════════════');
     if (canClaim) {
-      lines.push('You CAN claim this token!');
+      lines.push('✅ You CAN claim this token!');
       lines.push('');
-      lines.push(`Run: /lyx claim:execute --token ${addr}`);
+      if (dropInfo.codewordEnabled && decodedCodeword) {
+        lines.push('Run:');
+        lines.push(`  /lyx claim --token ${addr} --codeword "${decodedCodeword}" --yes`);
+      } else {
+        lines.push('Run:');
+        lines.push(`  /lyx claim --token ${addr} --yes`);
+      }
     } else {
-      lines.push('You CANNOT claim yet');
+      lines.push('❌ You CANNOT claim yet');
       const reasons = [];
       if (!dropInfo.claimActive) reasons.push('Claim period not active');
+      if (!dropInfo.claimEnabled) reasons.push('Claim disabled');
+      if (dropInfo.isFull) reasons.push('Drop is FULL');
       if (eligibility?.hasClaimed) reasons.push('Already claimed');
       if (eligibility && !eligibility.tokenOk) reasons.push('Token requirement not met');
       if (eligibility && !eligibility.followersOk) reasons.push('Follower requirement not met');
-      if (dropInfo.codewordEnabled) reasons.push('Codeword required');
+      if (dropInfo.codewordEnabled && !decodedCodeword) {
+        if (dropInfo.totalClaimers === 0n) {
+          reasons.push('Codeword required but unknown (no existing claims)');
+        } else {
+          reasons.push('Codeword required but decode failed');
+        }
+      }
       
       if (reasons.length > 0) {
         lines.push('');
@@ -387,7 +485,7 @@ class CheckCommand extends DappCommand {
   }
 
   onSuccess() {
-    // 出力は build() 内で完了
+    // Output already printed in build()
   }
 }
 
