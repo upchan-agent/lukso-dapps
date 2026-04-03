@@ -50,20 +50,28 @@ class MomentMintCommand extends DappCommand {
 
     // ─── Upload Files ───────────────────────────────────────────────────
     let imageCid = null;
+    let imageHash = null;
     let videoCid = null;
+    let videoHash = null;
     let audioCid = null;
 
     if (args.image) {
       console.log('📤 Uploading image to IPFS...');
+      const imageBuffer = await readFile(args.image);
       imageCid = await uploadToPinata(args.image);
+      imageHash = ethers.keccak256(imageBuffer);
       console.log(`   ✓ CID: ${imageCid}`);
+      console.log(`   ✓ Hash: ${imageHash}`);
       console.log('');
     }
 
     if (args.video) {
       console.log('📤 Uploading video to IPFS...');
+      const videoBuffer = await readFile(args.video);
       videoCid = await uploadToPinata(args.video);
+      videoHash = ethers.keccak256(videoBuffer);
       console.log(`   ✓ CID: ${videoCid}`);
+      console.log(`   ✓ Hash: ${videoHash}`);
       console.log('');
     }
 
@@ -75,22 +83,42 @@ class MomentMintCommand extends DappCommand {
     }
 
     // ─── Create Metadata ────────────────────────────────────────────────
+    // NOTE: verification object is required for lsp-indexer to recognize images.
+    // The FM API auto-fills width/height but does NOT auto-fill verification,
+    // because it doesn't have access to the raw file bytes at that point.
+    // The official FM UI computes keccak256 in the browser before sending metadata.
     console.log('📝 Creating metadata...');
+    const imageVerification = imageHash
+      ? { method: "keccak256(bytes)", data: imageHash }
+      : undefined;
+    const videoVerification = videoHash
+      ? { method: "keccak256(bytes)", data: videoHash }
+      : undefined;
+
     const metadata = {
       LSP4Metadata: {
         name: title,
         description: description,
         images: imageCid ? [[{
-          url: `ipfs://${imageCid}`
+          url: `ipfs://${imageCid}`,
+          verification: imageVerification
         }]] : [],
+        icon: imageCid ? [{
+          url: `ipfs://${imageCid}`,
+          verification: imageVerification
+        }] : [],
         videos: videoCid ? [[{
-          url: `ipfs://${videoCid}`
+          url: `ipfs://${videoCid}`,
+          verification: videoVerification
         }]] : [],
         assets: audioCid ? [{
           url: `ipfs://${audioCid}`,
           fileType: args.audio.split('.').pop().toLowerCase()
         }] : [],
-        tags: tags
+        tags: tags,
+        links: [],
+        documents: [],
+        attributes: []
       }
     };
     console.log('   ✓ Metadata created');

@@ -57,16 +57,19 @@ class UpdateGridCommand extends DappCommand {
 
     console.log('⛓ Writing to blockchain...');
     
-    // Use executeDirectSetData() for proper Activity attribution
-    // This calls UP.setData() directly from controller EOA, bypassing KeyManager.execute()
-    // Ensures UniversalEverything shows UP (not KeyManager) as the actor
-    const { executeDirectSetData } = await import('../../lib/core/executor.js');
-    const result = await executeDirectSetData(
-      DATA_KEYS.LSP28TheGrid,
-      verifiableUri,
-      credentials.privateKey,
-      credentials.upAddress
-    );
+    // Use executeSetDataWithFallback() for gasless relay support.
+    // Relay path:  Relayer → KM.executeRelayCall(sig, ..., UP.setData(key, value)) → UP
+    // Direct path: Controller EOA → UP.setData(key, value)
+    // Use --direct flag to force direct execution (skip relay, save quota).
+    const { executeSetDataWithFallback } = await import('../../lib/core/executor.js');
+    const result = await executeSetDataWithFallback({
+      dataKey: DATA_KEYS.LSP28TheGrid,
+      dataValue: verifiableUri,
+      controllerAddress: credentials.controllerAddress,
+      privateKey: credentials.privateKey,
+      upAddress: credentials.upAddress,
+      directMode: args.direct === true || args.direct === 'true',
+    });
     
     console.log('✅ TheGrid metadata updated successfully!');
     console.log(`TX: ${result.transactionHash}`);

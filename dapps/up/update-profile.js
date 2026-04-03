@@ -4,6 +4,10 @@
  * 
  * Since v1.1.0: Merges with existing metadata by default.
  * Use --replace flag for full replacement (legacy behavior).
+ * 
+ * Since v1.2.0: Auto-fills verification hashes for images missing them.
+ * This ensures lsp-indexer always recognizes profile/background images,
+ * regardless of whether metadata was built manually (--json) or via flags.
  */
 import { readFile } from 'fs/promises';
 import { ethers } from 'ethers';
@@ -22,7 +26,7 @@ class UpdateProfileCommand extends DappCommand {
     }
 
     const jsonFile = args.json;
-    const replaceMode = args.replace === true;
+    const replaceMode = args.replace === true || args.replace === 'true';
     const useBuilder = !jsonFile && (args.name || args.description || args.tags || args.image || args.background || args.avatar || args.links);
     
     if (!jsonFile && !useBuilder) {
@@ -49,6 +53,19 @@ class UpdateProfileCommand extends DappCommand {
         // Merge mode: Merge with existing metadata
         console.log('🔄 Merge mode: Merging with existing metadata...');
         parsed = await this.mergeWithExisting(parsed, key, credentials);
+      }
+
+      // Auto-fill verification hashes for images missing them
+      // This prevents lsp-indexer from ignoring images without verification
+      if (key === 'LSP3Profile') {
+        const profile = parsed.LSP3Profile || parsed;
+        await this.ensureImageVerification(profile, 'profileImage');
+        await this.ensureImageVerification(profile, 'backgroundImage');
+        if (parsed.LSP3Profile) {
+          parsed.LSP3Profile = profile;
+        } else {
+          parsed = profile;
+        }
       }
     } else {
       // Builder mode: Fetch existing and merge
@@ -134,16 +151,21 @@ class UpdateProfileCommand extends DappCommand {
 
     console.log('⛓ Writing to blockchain...');
     
-    // Use executeDirectSetData() for proper Activity attribution
-    // This calls UP.setData() directly from controller EOA, bypassing KeyManager.execute()
-    // Ensures UniversalEverything shows UP (not KeyManager) as the actor
-    const { executeDirectSetData } = await import('../../lib/core/executor.js');
-    const result = await executeDirectSetData(
-      DATA_KEYS.LSP3Profile,
-      verifiableUri,
-      credentials.privateKey,
-      credentials.upAddress
-    );
+    // Use executeSetDataWithFallback() for gasless relay support.
+    // Relay path:  Relayer → KM.executeRelayCall(sig, ..., UP.setData(key, value)) → UP
+    //              msg.sender at UP = KM; attribution via PermissionsVerified event
+    // Direct path: Controller EOA → UP.setData(key, value)
+    //              msg.sender at UP = Controller EOA (proper attribution)
+    // Use --direct flag to force direct execution (skip relay, save quota).
+    const { executeSetDataWithFallback } = await import('../../lib/core/executor.js');
+    const result = await executeSetDataWithFallback({
+      dataKey: DATA_KEYS.LSP3Profile,
+      dataValue: verifiableUri,
+      controllerAddress: credentials.controllerAddress,
+      privateKey: credentials.privateKey,
+      upAddress: credentials.upAddress,
+      directMode: args.direct === true || args.direct === 'true',
+    });
     
     console.log('✅ Metadata update completed!');
     console.log(`TX: ${result.transactionHash}`);
@@ -152,6 +174,51 @@ class UpdateProfileCommand extends DappCommand {
     
     // Skip default execution flow (we already executed)
     return { skipExecution: true, meta: { ...result, key, cid } };
+  }
+
+  /**
+   * Auto-fill verification hashes for image entries that are missing them.
+   * 
+   * lsp-indexer requires verification objects to recognize images.
+   * When metadata is built manually (--json mode or by AI agent),
+   * verification is often omitted, causing images to not appear.
+   * 
+   * This fetches the image bytes from IPFS and computes keccak256.
+   * Only processes ipfs:// URLs (https:// images already have verification
+   * from the UP cloud proxy).
+   * 
+   * @param {Object} profile - LSP3Profile object (mutated in place)
+   * @param {string} fieldName - 'profileImage' or 'backgroundImage'
+   */
+  async ensureImageVerification(profile, fieldName) {
+    const images = profile[fieldName];
+    if (!Array.isArray(images) || images.length === 0) return;
+
+    for (let i = 0; i < images.length; i++) {
+      const img = images[i];
+      if (img.verification) continue; // Already has verification
+
+      const url = img.url;
+      if (!url) continue;
+
+      // Only process ipfs:// URLs
+      if (!url.startsWith('ipfs://')) {
+        console.log(`  ⚠️ ${fieldName}[${i}]: non-IPFS URL, skipping verification`);
+        continue;
+      }
+
+      try {
+        const cid = url.replace('ipfs://', '');
+        console.log(`  🔐 ${fieldName}[${i}]: fetching from IPFS for verification...`);
+        const imageBytes = await fetchFromIpfs(cid);
+        const hash = ethers.keccak256(imageBytes);
+        img.verification = { method: 'keccak256(bytes)', data: hash };
+        console.log(`  ✓ ${fieldName}[${i}]: verification added (${hash.slice(0, 14)}...)`);
+      } catch (err) {
+        console.log(`  ⚠️ ${fieldName}[${i}]: could not fetch for verification: ${err.message}`);
+        // Continue without verification — better than failing the whole update
+      }
+    }
   }
 
   /**

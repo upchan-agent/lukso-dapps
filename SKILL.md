@@ -1,7 +1,7 @@
 ---
 name: lukso-dapps
 description: An extensible skill for operating blockchain DApps via a Universal Profile (UP). Designed primarily for LUKSO, and easily extendable by adding commands to dapps.yaml. Also supports EVM multichain expansion (chains other than LUKSO are untested).
-version: 1.3.3
+version: 1.3.4
 aliases:
   - lyx
 tags:
@@ -535,7 +535,26 @@ export DEBUG_LSP25=true
 
 See [GitHub Releases](https://github.com/upchan-agent/lukso-dapps/releases) for full changelog.
 
-### v1.3.2 (2026-03-27)
+### v1.3.4 (2026-04-03)
+
+Quota check fix, --replace flag bug fix, gasless relay for Grid, image verification for moments
+
+#### New Features
+- **`forever-moments:mint`**: Added automatic `keccak256` verification for image and video files — ensures lsp-indexer recognizes uploaded media
+
+#### Bug Fixes
+- **`checkQuota()`: Fixed 401 Unauthorized error** — Changed signature method from `signMessage(string)` to `signMessage(ethers.getBytes(solidityPackedKeccak256(...)))` to match the relayer's verification scheme
+- **`checkQuota()`: Return raw API response** — Now returns the actual fields from the relayer (`quota`, `totalQuota`, `unit`, `resetDate`) instead of mapping to non-existent fields
+- **`up:update-profile --replace`: Fixed flag not working** — `args.replace === true` comparison failed because CLI args are strings (`'true'`), added `|| args.replace === 'true'`
+
+#### Improvements
+- **`up:update-grid`**: Now uses `executeSetDataWithFallback()` for gasless relay support (was direct-only before)
+- **`up:update-grid`**: Added `--direct` flag support to force direct execution
+- **`forever-moments:mint`**: Metadata now includes explicit `links: []`, `documents: []`, `attributes: []` arrays for LSP4 completeness
+
+### v1.3.3 (2026-03-27)
+
+New LSP26 follow/follower query commands and agent list
 
 New LSP26 follow/follower query commands and agent list
 
