@@ -42,7 +42,7 @@ class UnfollowCommand extends DappCommand {
       console.log('⚠️ Please review the details. To execute, run again with --yes flag:');
       console.log(` /lyx up:unfollow --target ${target} --yes`);
       console.log('');
-      return { skipExecution: true };
+      return { skipExecution: true, meta: { target, status: 'confirm' } };
     }
 
     const lsp26Iface = new ethers.Interface(ABIS.LSP26);
@@ -53,10 +53,12 @@ class UnfollowCommand extends DappCommand {
   }
 
   onSuccess(result) {
-    if (result.meta.status === 'not_following') {
+    if (result.meta?.status === 'not_following') {
       console.log(`⚠️ Skipped: ${result.meta.target} is not currently followed`);
+    } else if (result.meta?.status === 'confirm') {
+      // Confirmation mode - message already printed in build()
     } else {
-      console.log(`✅ Unfollow completed: ${result.meta.target}`);
+      console.log(`✅ Unfollow completed: ${result.meta?.target}`);
       console.log(`TX: ${result.transactionHash}`);
       console.log(`Explorer: ${result.explorerUrl}`);
     }

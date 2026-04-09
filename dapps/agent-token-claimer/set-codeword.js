@@ -99,7 +99,7 @@ class SetCodewordCommand extends DappCommand {
   }
 
   onSuccess(result, context) {
-    const meta = context.meta;
+    const meta = result.meta;
     console.log('🎉 Codeword Updated!');
     console.log('');
     console.log(`   Drop: ${formatAddr(meta.tokenAddr)}`);

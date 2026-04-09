@@ -36,7 +36,7 @@ class RegisterCommand extends DappCommand {
       console.log('⚠️  Already registered! Skipping registration.');
       console.log('');
       console.log('To verify details: /lyx ut verify --address ' + credentials.upAddress + ' --detailed');
-      return { skipExecution: true };
+      return { skipExecution: true, meta: { name, upAddress: credentials.upAddress, status: 'already_registered' } };
     }
 
     console.log('✅ Not registered yet. Proceeding to Step 2...');
@@ -55,7 +55,7 @@ class RegisterCommand extends DappCommand {
       console.log('⚠️ Please review the details. To execute, run again with --yes flag:');
       console.log(` /lyx universal-trust:register --yes`);
       console.log('');
-      return { skipExecution: true };
+      return { skipExecution: true, meta: { name, upAddress: credentials.upAddress, status: 'confirm' } };
     }
 
     const registryIface = new ethers.Interface(ABIS.UniversalTrustRegistry);
@@ -78,12 +78,19 @@ class RegisterCommand extends DappCommand {
   }
 
   onSuccess(result) {
-    console.log('');
-    console.log('✅ Registration completed!');
-    console.log('TX:', result.transactionHash);
-    console.log('Explorer:', result.explorerUrl);
-    console.log('');
-    console.log('Verify with: /lyx ut verify --address ' + result.meta.upAddress + ' --detailed');
+    if (result.meta?.status === 'already_registered') {
+      console.log('⚠️  Already registered! Skipping registration.');
+      console.log('To verify details: /lyx ut verify --address ' + result.meta?.upAddress + ' --detailed');
+    } else if (result.meta?.status === 'confirm') {
+      // Confirmation mode - message already printed in build()
+    } else {
+      console.log('');
+      console.log('✅ Registration completed!');
+      console.log('TX:', result.transactionHash);
+      console.log('Explorer:', result.explorerUrl);
+      console.log('');
+      console.log('Verify with: /lyx ut verify --address ' + result.meta?.upAddress + ' --detailed');
+    }
   }
 }
 

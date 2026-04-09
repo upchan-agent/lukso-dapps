@@ -78,7 +78,7 @@ class SetClaimEnabledCommand extends DappCommand {
   }
 
   onSuccess(result, context) {
-    const meta = context.meta;
+    const meta = result.meta;
     console.log('🎉 Claim Enabled!');
     console.log('');
     console.log(`   Drop: ${formatAddr(meta.tokenAddr)}`);

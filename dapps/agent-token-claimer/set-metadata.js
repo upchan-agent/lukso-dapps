@@ -178,7 +178,7 @@ class SetMetadataCommand extends DappCommand {
    * Success handler
    */
   onSuccess(result, context) {
-    const meta = context.meta;
+    const meta = result.meta;
     
     console.log('🎉 Metadata Set Successfully!');
     console.log('');

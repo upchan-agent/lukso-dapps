@@ -51,3 +51,4 @@ tmp/
 temp/
 .cache/
 agent-token-claimer/claim-log.json
+claim-log.json

@@ -49,7 +49,7 @@ class FollowCommand extends DappCommand {
       console.log('⚠️ Please review the details. To execute, run again with --yes flag:');
       console.log(` /lyx up:follow --target ${target} --yes`);
       console.log('');
-      return { skipExecution: true };
+      return { skipExecution: true, meta: { target, status: 'confirm' } };
     }
 
     // Encode LSP26 follow(address)
@@ -70,10 +70,12 @@ class FollowCommand extends DappCommand {
   }
 
   onSuccess(result) {
-    if (result.meta.status === 'already_following') {
+    if (result.meta?.status === 'already_following') {
       console.log(`⚠️ Skipped: ${result.meta.target} is already being followed`);
+    } else if (result.meta?.status === 'confirm') {
+      // Confirmation mode - message already printed in build()
     } else {
-      console.log(`✅ Follow completed: ${result.meta.target}`);
+      console.log(`✅ Follow completed: ${result.meta?.target}`);
       console.log(`TX: ${result.transactionHash}`);
       console.log(`Explorer: ${result.explorerUrl}`);
     }

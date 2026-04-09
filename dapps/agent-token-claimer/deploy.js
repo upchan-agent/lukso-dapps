@@ -329,7 +329,7 @@ class DeployCommand extends DappCommand {
    * Success handler
    */
   onSuccess(result, context) {
-    const meta = context.meta;
+    const meta = result.meta;
     
     console.log('🎉 Drop Deployed Successfully!');
     console.log('');

@@ -79,7 +79,7 @@ class FollowBatchCommand extends DappCommand {
       console.log('⚠️ Please review the details. To execute, run again with --yes flag:');
       console.log(` /lyx up:follow-batch --targets ${targets} --yes`);
       console.log('');
-      return { skipExecution: true };
+      return { skipExecution: true, meta: { total: targetAddresses.length, executed: 0, skipped: skipTargets.length, status: 'confirm' } };
     }
 
     // Batch execute only for executable targets
@@ -92,10 +92,14 @@ class FollowBatchCommand extends DappCommand {
   }
 
   onSuccess(result) {
-    const { total, executed, skipped } = result.meta;
-    console.log(`✅ Batch follow completed: executed ${executed} / ${total}, skipped ${skipped}`);
-    console.log(`TX: ${result.transactionHash}`);
-    console.log(`Explorer: ${result.explorerUrl}`);
+    const { total, executed, skipped } = result.meta || {};
+    if (result.meta?.status === 'confirm') {
+      // Confirmation mode - message already printed in build()
+    } else {
+      console.log(`✅ Batch follow completed: executed ${executed} / ${total}, skipped ${skipped}`);
+      console.log(`TX: ${result.transactionHash}`);
+      console.log(`Explorer: ${result.explorerUrl}`);
+    }
   }
 }
 new FollowBatchCommand().run();
