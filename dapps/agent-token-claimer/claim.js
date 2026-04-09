@@ -146,7 +146,7 @@ class ClaimCommand extends DappCommand {
   onSuccess(result, context) {
     console.log('🎉 Claim Successful!');
     console.log('');
-    console.log(`   Token: ${context.meta.tokenAddr}`);
+    console.log(`   Token: ${result.meta.tokenAddr}`);
     console.log(`   TX Hash: ${result.transactionHash}`);
     console.log(`   Explorer: ${result.explorerUrl}`);
     console.log('');
