@@ -5,7 +5,7 @@
  */
 
 import { ethers } from 'ethers';
-import { DappCommand, buildUpExecute } from '../../lib/core/command.js';
+import { DappCommand, buildExecutePayload } from '../../lib/core/command.js';
 import { CONTRACTS, CHAINS, ABIS } from '../../lib/core/constants.js';
 
 class RegisterCommand extends DappCommand {
@@ -61,7 +61,7 @@ class RegisterCommand extends DappCommand {
     const registryIface = new ethers.Interface(ABIS.UniversalTrustRegistry);
     const registerData = registryIface.encodeFunctionData('register', [name, description, metadataURI]);
 
-    const payload = buildUpExecute(credentials.upAddress, CONTRACTS.UNIVERSAL_TRUST_REGISTRY, registerData);
+    const payload = buildExecutePayload(CONTRACTS.UNIVERSAL_TRUST_REGISTRY, registerData);
 
     return { payload, meta: { name, upAddress: credentials.upAddress } };
   }

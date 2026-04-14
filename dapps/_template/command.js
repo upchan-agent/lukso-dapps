@@ -12,7 +12,7 @@
  *   /lyx <namespace>:<command-name> --param1 value
  */
 
-import { DappCommand, buildUpExecute, encodeFunctionCall } from '../../lib/core/command.js';
+import { DappCommand, buildExecutePayload, encodeFunctionCall } from '../../lib/core/command.js';
 // import { CONTRACTS } from '../../lib/core/constants.js';
 import { ethers } from 'ethers';
 
@@ -77,11 +77,11 @@ class TemplateCommand extends DappCommand {
     // const data = iface.encodeFunctionData('myFunction', [myParam]);
 
     // Build UP.execute() payload
-    const payload = buildUpExecute(credentials.upAddress, targetAddress, data);
+    const payload = buildExecutePayload(targetAddress, data);
 
     return {
       payload,          // Required: encoded payload passed to UP.execute()
-      // Note: For LYX transfers, embed the amount via buildUpExecute(target, '0x', amountLyx)
+      // Note: For LYX transfers, embed the amount via buildExecutePayload(target, '0x', amountLyx)
       // Do NOT pass value separately — it is for msg.value to KeyManager (always 0 on LUKSO)
       meta: { myParam } // Optional: passed to onSuccess / onError
     };

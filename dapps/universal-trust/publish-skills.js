@@ -6,7 +6,7 @@
  */
 
 import { ethers } from 'ethers';
-import { DappCommand, buildUpExecute } from '../../lib/core/command.js';
+import { DappCommand, buildExecutePayload } from '../../lib/core/command.js';
 import { CONTRACTS, ABIS } from '../../lib/core/constants.js';
 
 class PublishSkillsCommand extends DappCommand {
@@ -51,7 +51,7 @@ class PublishSkillsCommand extends DappCommand {
     const registryIface = new ethers.Interface(ABIS.UniversalTrustRegistry);
     const publishData = registryIface.encodeFunctionData('publishSkill', [skillKey, name, content]);
 
-    const payload = buildUpExecute(credentials.upAddress, CONTRACTS.SKILLS_REGISTRY, publishData);
+    const payload = buildExecutePayload(CONTRACTS.SKILLS_REGISTRY, publishData);
 
     return { payload, meta: { name, skillKey } };
   }

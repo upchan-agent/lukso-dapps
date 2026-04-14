@@ -12,7 +12,7 @@
  *   - Recommended for token drops (LSP7)
  */
 
-import { DappCommand, CHAINS, buildUpExecute, encodeFunctionCall } from '../../lib/core/index.js';
+import { DappCommand, CHAINS, encodeFunctionCall } from '../../lib/core/index.js';
 import { uploadToPinata } from '../../lib/shared/pinata.js';
 import { ethers } from 'ethers';
 

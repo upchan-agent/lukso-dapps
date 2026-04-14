@@ -54,30 +54,38 @@ class GetGridCommand extends DappCommand {
     console.log('📋 TheGrid metadata:');
     console.log('');
 
-    // Display grid information
-    if (lsp28Data.title) {
-      console.log(`Title: ${lsp28Data.title}`);
-    }
-    if (lsp28Data.columns) {
-      console.log(`Columns: ${lsp28Data.columns}`);
-    }
-    if (lsp28Data.visibility !== undefined) {
-      console.log(`Visibility: ${lsp28Data.visibility}`);
-    }
+    // LSP28TheGrid is an array of grid sections
+    const sections = Array.isArray(lsp28Data) ? lsp28Data : [lsp28Data];
+    console.log(`Sections (${sections.length}):`);
+    console.log('');
 
-    // Display grid items
-    if (lsp28Data.items && Array.isArray(lsp28Data.items)) {
+    sections.forEach((section, sIndex) => {
+      console.log(`[${sIndex + 1}] ${section.title || '(untitled)'}`);
+      if (section.gridColumns) {
+        console.log(`    Columns: ${section.gridColumns}`);
+      }
+      if (section.visibility !== undefined) {
+        console.log(`    Visibility: ${section.visibility}`);
+      }
+
+      const items = section.grid || section.items || [];
+      if (items.length > 0) {
+        console.log(`    Items (${items.length}):`);
+        items.forEach((item, iIndex) => {
+          console.log(`      (${iIndex + 1}) ${item.type || 'N/A'} ${item.width}x${item.height}`);
+          if (item.properties && Object.keys(item.properties).length > 0) {
+            const src = item.properties.src;
+            if (src) {
+              console.log(`          src: ${src}`);
+            }
+          }
+        });
+      } else {
+        console.log('    (empty)');
+      }
       console.log('');
-      console.log(`Items (${lsp28Data.items.length}):`);
-      lsp28Data.items.forEach((item, index) => {
-        console.log(`  [${index}] Type: ${item.type || 'N/A'}`);
-        if (item.width) console.log(`       Width: ${item.width}`);
-        if (item.height) console.log(`       Height: ${item.height}`);
-        if (item.properties && Object.keys(item.properties).length > 0) {
-          console.log(`       Properties: ${JSON.stringify(item.properties)}`);
-        }
-      });
-    }
+    });
+  
 
     return { skipExecution: true };
   }

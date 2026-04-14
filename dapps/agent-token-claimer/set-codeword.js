@@ -7,7 +7,7 @@
  *   Non-interactive: /lyx agent-token-claimer:set-codeword --token 0x... --codeword "secret" --yes
  */
 
-import { DappCommand, CHAINS, buildUpExecute } from '../../lib/core/index.js';
+import { DappCommand, CHAINS, buildExecutePayload } from '../../lib/core/index.js';
 import { ethers } from 'ethers';
 import readline from 'readline';
 
@@ -87,7 +87,7 @@ class SetCodewordCommand extends DappCommand {
       txData = drop.interface.encodeFunctionData('setCodeword', [codeword]);
     }
     
-    const payload = buildUpExecute(credentials.upAddress, tokenAddr, txData);
+    const payload = buildExecutePayload(tokenAddr, txData);
     
     console.log('✅ Ready to set codeword!');
     console.log('');

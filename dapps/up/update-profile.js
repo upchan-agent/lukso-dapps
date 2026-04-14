@@ -13,7 +13,7 @@ import { readFile } from 'fs/promises';
 import { ethers } from 'ethers';
 import { ERC725 } from '@erc725/erc725.js';
 import LSP3Schemas from '@erc725/erc725.js/schemas/LSP3ProfileMetadata.json' with { type: 'json' };
-import { DappCommand, buildUpExecute } from '../../lib/core/command.js';
+import { DappCommand } from '../../lib/core/command.js';
 import { DATA_KEYS } from '../../lib/core/constants.js';
 import { uploadToPinata, uploadJsonToPinata } from '../../lib/shared/pinata.js';
 import { buildVerifiableUri, fetchFromIpfs } from '../../lib/shared/metadata.js';

@@ -7,7 +7,7 @@
  *   Non-interactive: /lyx agent-token-claimer:set-claim-enabled --token 0x... --enabled --yes
  */
 
-import { DappCommand, CHAINS, buildUpExecute } from '../../lib/core/index.js';
+import { DappCommand, CHAINS, buildExecutePayload } from '../../lib/core/index.js';
 import { ethers } from 'ethers';
 import readline from 'readline';
 
@@ -66,7 +66,7 @@ class SetClaimEnabledCommand extends DappCommand {
     const drop = new ethers.Contract(tokenAddr, DROP_ABI, provider);
     
     const txData = drop.interface.encodeFunctionData('setClaimEnabled', [enabled]);
-    const payload = buildUpExecute(credentials.upAddress, tokenAddr, txData);
+    const payload = buildExecutePayload(tokenAddr, txData);
     
     console.log('✅ Ready to set claim enabled!');
     console.log('');

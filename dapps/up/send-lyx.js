@@ -25,7 +25,7 @@
  * Note: CALL / SUPER_CALL is NOT required for simple LYX transfers (data = 0x)
  */
 import { ethers } from 'ethers';
-import { DappCommand, buildUpExecute } from '../../lib/core/command.js';
+import { DappCommand, buildExecutePayload } from '../../lib/core/command.js';
 
 class SendLYXCommand extends DappCommand {
   needsCredentials = true;
@@ -73,8 +73,7 @@ Please review the details. To execute, run again with --yes flag:
 
     // ─── Build UP.execute() payload ─────────────────────────────────────
     // For simple LYX transfer: UP.execute(CALL, toAddress, amountLyx, 0x)
-    const payload = buildUpExecute(
-      credentials.upAddress,
+    const payload = buildExecutePayload(
       toAddress,
       '0x', // Empty data for simple transfer
       amountLyx // LYX amount as value (embedded in payload)
