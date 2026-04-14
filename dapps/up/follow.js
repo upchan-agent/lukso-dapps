@@ -5,7 +5,7 @@
  * Checks the follow status and executes only if the target is not already followed
  */
 import { ethers } from 'ethers';
-import { DappCommand, buildUpExecute } from '../../lib/core/command.js';
+import { DappCommand, buildExecutePayload } from '../../lib/core/command.js';
 import { CONTRACTS, CHAINS, ABIS } from '../../lib/core/constants.js';
 /**
  * FollowCommand - follow command
@@ -57,7 +57,7 @@ class FollowCommand extends DappCommand {
     const followData = lsp26Iface.encodeFunctionData('follow', [target]);
 
     // Build UP.execute() payload
-    const payload = buildUpExecute(
+    const payload = buildExecutePayload(
       CONTRACTS.LSP26,
       followData
     );

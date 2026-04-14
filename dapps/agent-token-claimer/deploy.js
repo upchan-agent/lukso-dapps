@@ -13,7 +13,7 @@
  *   /lyx agent-token-claimer:set-metadata --token 0x... --image ./image.png
  */
 
-import { DappCommand, CHAINS, buildUpExecute, encodeFunctionCall } from '../../lib/core/index.js';
+import { DappCommand, CHAINS, buildExecutePayload, encodeFunctionCall } from '../../lib/core/index.js';
 import { ethers } from 'ethers';
 import readline from 'readline';
 
@@ -279,7 +279,7 @@ class DeployCommand extends DappCommand {
         inputs.isNonDivisible,
       ]);
       
-      const payload = buildUpExecute(FACTORY_ADDRESS, txData);
+      const payload = buildExecutePayload(FACTORY_ADDRESS, txData);
       
       console.log('   Payload encoded');
       console.log('');
@@ -306,7 +306,7 @@ class DeployCommand extends DappCommand {
         inputs.amount,
       ]);
       
-      const payload = buildUpExecute(FACTORY_ADDRESS, txData);
+      const payload = buildExecutePayload(FACTORY_ADDRESS, txData);
       
       console.log('   Payload encoded');
       console.log('');

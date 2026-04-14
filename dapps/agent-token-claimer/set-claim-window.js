@@ -7,7 +7,7 @@
  *   Non-interactive: /lyx agent-token-claimer:set-claim-window --token 0x... --start ... --end ... --yes
  */
 
-import { DappCommand, CHAINS, buildUpExecute } from '../../lib/core/index.js';
+import { DappCommand, CHAINS, buildExecutePayload } from '../../lib/core/index.js';
 import { ethers } from 'ethers';
 import readline from 'readline';
 
@@ -92,7 +92,7 @@ class SetClaimWindowCommand extends DappCommand {
     const drop = new ethers.Contract(tokenAddr, DROP_ABI, provider);
     
     const txData = drop.interface.encodeFunctionData('setClaimWindow', [startTime, endTime]);
-    const payload = buildUpExecute(tokenAddr, txData);
+    const payload = buildExecutePayload(tokenAddr, txData);
     
     console.log('✅ Ready to set claim window!');
     console.log('');

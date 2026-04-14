@@ -4,7 +4,7 @@
  * Token transfer and information display
  */
 import { ethers } from 'ethers';
-import { DappCommand, buildUpExecute } from '../../lib/core/command.js';
+import { DappCommand, buildExecutePayload } from '../../lib/core/command.js';
 import { CHAINS, LSP4_DATA_KEYS, ABIS } from '../../lib/core/index.js';
 
 class TokensCommand extends DappCommand {
@@ -134,7 +134,7 @@ Usage:
       '0x' // data
     ]);
 
-    const payload = buildUpExecute(tokenAddress, transferData);
+    const payload = buildExecutePayload(tokenAddress, transferData);
     console.log('✅ Payload built');
     console.log('');
 

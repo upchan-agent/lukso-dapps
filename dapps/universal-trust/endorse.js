@@ -6,7 +6,7 @@
  */
 
 import { ethers } from 'ethers';
-import { DappCommand, buildUpExecute } from '../../lib/core/command.js';
+import { DappCommand, buildExecutePayload } from '../../lib/core/command.js';
 import { CONTRACTS, ABIS } from '../../lib/core/constants.js';
 
 class EndorseCommand extends DappCommand {
@@ -36,7 +36,7 @@ class EndorseCommand extends DappCommand {
     const registryIface = new ethers.Interface(ABIS.UniversalTrustRegistry);
     const endorseData = registryIface.encodeFunctionData('endorse', [target, reason]);
 
-    const payload = buildUpExecute(CONTRACTS.UNIVERSAL_TRUST_REGISTRY, endorseData);
+    const payload = buildExecutePayload(CONTRACTS.UNIVERSAL_TRUST_REGISTRY, endorseData);
 
     return { payload, meta: { target, reason } };
   }

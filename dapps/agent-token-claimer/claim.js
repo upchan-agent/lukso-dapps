@@ -8,7 +8,7 @@
  * Claims LSP7/LSP8 tokens from Agent Token Claimer drops via Universal Profile.
  */
 
-import { DappCommand, CHAINS, buildUpExecute, encodeFunctionCall } from '../../lib/core/index.js';
+import { DappCommand, CHAINS, buildExecutePayload, encodeFunctionCall } from '../../lib/core/index.js';
 import { ethers } from 'ethers';
 
 // ═══════════════════════════════════════════════════════════
@@ -116,7 +116,7 @@ class ClaimCommand extends DappCommand {
     console.log('');
 
     // Build UP.execute() payload
-    const payload = buildUpExecute(tokenAddr, data);
+    const payload = buildExecutePayload(tokenAddr, data);
 
     console.log('✅ Ready to claim!');
     console.log('');
