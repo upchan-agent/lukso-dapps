@@ -535,6 +535,22 @@ export DEBUG_LSP25=true
 
 See [GitHub Releases](https://github.com/upchan-agent/lukso-dapps/releases) for full changelog.
 
+### v1.3.5 (2026-04-14)
+
+Fix LYX send via relay, refactor direct execution to match official, cleanup dead code
+
+#### Bug Fixes
+- **`up:send-lyx` via relay**: Fixed 400 "Gas estimation failure" — LSP25 signature now includes the value field per spec. Previously value was hardcoded to 0, causing signature mismatch for non-zero LYX transfers.
+- **`up:get-grid`**: Fixed empty display — LSP28 TheGrid is an array of sections, but display code treated it as a single object. Now iterates over all sections.
+
+#### Refactors
+- **Direct execution**: Changed from `KM.execute(payload)` to `UP.execute(op, target, value, data)` — matches official reference implementation. `To` address is now UP instead of KeyManager.
+- **Function rename**: `buildUpExecute` → `buildExecutePayload` (matches official naming)
+- **Removed deprecated parameter**: Dropped unused `upAddress` first argument from `buildExecutePayload` across all 19 command files.
+
+#### Cleanup
+- Removed unused functions: `buildExecuteCall`, `executeLSP7Transfer`, `executeLyxTransfer` from executor.js (123 lines)
+
 ### v1.3.4 (2026-04-03)
 
 Quota check fix, --replace flag bug fix, gasless relay for Grid, image verification for moments
