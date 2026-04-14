@@ -77,7 +77,7 @@ class TemplateCommand extends DappCommand {
     // const data = iface.encodeFunctionData('myFunction', [myParam]);
 
     // Build UP.execute() payload
-    const payload = buildUpExecute(credentials.upAddress, targetAddress, data);
+    const payload = buildUpExecute(targetAddress, data);
 
     return {
       payload,          // Required: encoded payload passed to UP.execute()

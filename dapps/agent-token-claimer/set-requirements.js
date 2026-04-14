@@ -141,7 +141,7 @@ class SetRequirementsCommand extends DappCommand {
     const drop = new ethers.Contract(tokenAddr, DROP_ABI, provider);
     
     const txData = drop.interface.encodeFunctionData('setRequirements', [tokens, minBalances, minFollowers]);
-    const payload = buildUpExecute(credentials.upAddress, tokenAddr, txData);
+    const payload = buildUpExecute(tokenAddr, txData);
     
     console.log('✅ Ready to set requirements!');
     console.log('');

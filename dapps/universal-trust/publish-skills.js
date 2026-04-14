@@ -51,7 +51,7 @@ class PublishSkillsCommand extends DappCommand {
     const registryIface = new ethers.Interface(ABIS.UniversalTrustRegistry);
     const publishData = registryIface.encodeFunctionData('publishSkill', [skillKey, name, content]);
 
-    const payload = buildUpExecute(credentials.upAddress, CONTRACTS.SKILLS_REGISTRY, publishData);
+    const payload = buildUpExecute(CONTRACTS.SKILLS_REGISTRY, publishData);
 
     return { payload, meta: { name, skillKey } };
   }

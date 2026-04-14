@@ -36,7 +36,7 @@ class EndorseCommand extends DappCommand {
     const registryIface = new ethers.Interface(ABIS.UniversalTrustRegistry);
     const endorseData = registryIface.encodeFunctionData('endorse', [target, reason]);
 
-    const payload = buildUpExecute(credentials.upAddress, CONTRACTS.UNIVERSAL_TRUST_REGISTRY, endorseData);
+    const payload = buildUpExecute(CONTRACTS.UNIVERSAL_TRUST_REGISTRY, endorseData);
 
     return { payload, meta: { target, reason } };
   }

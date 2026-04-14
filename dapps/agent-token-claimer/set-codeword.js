@@ -87,7 +87,7 @@ class SetCodewordCommand extends DappCommand {
       txData = drop.interface.encodeFunctionData('setCodeword', [codeword]);
     }
     
-    const payload = buildUpExecute(credentials.upAddress, tokenAddr, txData);
+    const payload = buildUpExecute(tokenAddr, txData);
     
     console.log('✅ Ready to set codeword!');
     console.log('');

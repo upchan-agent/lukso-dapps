@@ -134,7 +134,7 @@ Usage:
       '0x' // data
     ]);
 
-    const payload = buildUpExecute(credentials.upAddress, tokenAddress, transferData);
+    const payload = buildUpExecute(tokenAddress, transferData);
     console.log('✅ Payload built');
     console.log('');
 

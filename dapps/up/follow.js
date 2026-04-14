@@ -58,7 +58,6 @@ class FollowCommand extends DappCommand {
 
     // Build UP.execute() payload
     const payload = buildUpExecute(
-      credentials.upAddress,
       CONTRACTS.LSP26,
       followData
     );

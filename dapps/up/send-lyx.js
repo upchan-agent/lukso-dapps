@@ -74,7 +74,6 @@ Please review the details. To execute, run again with --yes flag:
     // ─── Build UP.execute() payload ─────────────────────────────────────
     // For simple LYX transfer: UP.execute(CALL, toAddress, amountLyx, 0x)
     const payload = buildUpExecute(
-      credentials.upAddress,
       toAddress,
       '0x', // Empty data for simple transfer
       amountLyx // LYX amount as value (embedded in payload)

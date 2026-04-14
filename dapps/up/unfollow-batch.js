@@ -86,7 +86,7 @@ class UnfollowBatchCommand extends DappCommand {
     console.log(`🔨 Building transaction... (${executeTargets.length} entries)`);
     const lsp26Iface = new ethers.Interface(ABIS.LSP26);
     const data = lsp26Iface.encodeFunctionData('unfollowBatch', [executeTargets]);
-    const payload = buildUpExecute(credentials.upAddress, CONTRACTS.LSP26, data);
+    const payload = buildUpExecute(CONTRACTS.LSP26, data);
 
     return { payload, meta: { total: targetAddresses.length, executed: executeTargets.length, skipped: skipTargets.length } };
   }

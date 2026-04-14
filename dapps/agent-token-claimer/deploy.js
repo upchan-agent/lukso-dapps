@@ -279,7 +279,7 @@ class DeployCommand extends DappCommand {
         inputs.isNonDivisible,
       ]);
       
-      const payload = buildUpExecute(credentials.upAddress, FACTORY_ADDRESS, txData);
+      const payload = buildUpExecute(FACTORY_ADDRESS, txData);
       
       console.log('   Payload encoded');
       console.log('');
@@ -306,7 +306,7 @@ class DeployCommand extends DappCommand {
         inputs.amount,
       ]);
       
-      const payload = buildUpExecute(credentials.upAddress, FACTORY_ADDRESS, txData);
+      const payload = buildUpExecute(FACTORY_ADDRESS, txData);
       
       console.log('   Payload encoded');
       console.log('');

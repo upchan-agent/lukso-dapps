@@ -92,7 +92,7 @@ class SetClaimWindowCommand extends DappCommand {
     const drop = new ethers.Contract(tokenAddr, DROP_ABI, provider);
     
     const txData = drop.interface.encodeFunctionData('setClaimWindow', [startTime, endTime]);
-    const payload = buildUpExecute(credentials.upAddress, tokenAddr, txData);
+    const payload = buildUpExecute(tokenAddr, txData);
     
     console.log('✅ Ready to set claim window!');
     console.log('');

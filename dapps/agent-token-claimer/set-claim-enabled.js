@@ -66,7 +66,7 @@ class SetClaimEnabledCommand extends DappCommand {
     const drop = new ethers.Contract(tokenAddr, DROP_ABI, provider);
     
     const txData = drop.interface.encodeFunctionData('setClaimEnabled', [enabled]);
-    const payload = buildUpExecute(credentials.upAddress, tokenAddr, txData);
+    const payload = buildUpExecute(tokenAddr, txData);
     
     console.log('✅ Ready to set claim enabled!');
     console.log('');

@@ -61,7 +61,7 @@ class RegisterCommand extends DappCommand {
     const registryIface = new ethers.Interface(ABIS.UniversalTrustRegistry);
     const registerData = registryIface.encodeFunctionData('register', [name, description, metadataURI]);
 
-    const payload = buildUpExecute(credentials.upAddress, CONTRACTS.UNIVERSAL_TRUST_REGISTRY, registerData);
+    const payload = buildUpExecute(CONTRACTS.UNIVERSAL_TRUST_REGISTRY, registerData);
 
     return { payload, meta: { name, upAddress: credentials.upAddress } };
   }

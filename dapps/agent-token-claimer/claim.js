@@ -116,7 +116,7 @@ class ClaimCommand extends DappCommand {
     console.log('');
 
     // Build UP.execute() payload
-    const payload = buildUpExecute(credentials.upAddress, tokenAddr, data);
+    const payload = buildUpExecute(tokenAddr, data);
 
     console.log('✅ Ready to claim!');
     console.log('');
