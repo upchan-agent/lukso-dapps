@@ -204,3 +204,58 @@ dapps:
         file: "./dapps/agent-token-claimer/auto-check.js"
         args: [mode, limit, network]
         credentials: true
+
+  erc8004:
+    description: "ERC-8004 Agent Registry (Identity Registry / Reputation)"
+    commands:
+      # ⚠️ Requires --yes flag (confirmation mode by default)
+      register:
+        description: "Register your UP as an AI Agent on ERC-8004"
+        file: "./dapps/erc8004/register.js"
+        args: [name, description, image, endpoint, yes, direct, network]
+        credentials: true
+      info:
+        description: "Check agent registration details"
+        file: "./dapps/erc8004/info.js"
+        args: [address, agent-id, network]
+        credentials: true
+      list:
+        description: "List all registered agents on LUKSO"
+        file: "./dapps/erc8004/list.js"
+        args: [limit, json, network]
+        credentials: false
+      # ⚠️ Requires --yes flag (confirmation mode by default)
+      set-uri:
+        description: "Update agent metadata (name, description, image)"
+        file: "./dapps/erc8004/set-uri.js"
+        args: [agent-id, name, description, image, endpoint, service-name, yes, direct, network]
+        credentials: true
+      # ⚠️ Requires --yes flag (confirmation mode by default)
+      give-feedback:
+        description: "Give feedback / rating to an agent"
+        file: "./dapps/erc8004/give-feedback.js"
+        args: [agent-id, value, decimals, tag1, tag2, yes, direct, network]
+        credentials: true
+      read-feedback:
+        description: "Read feedback entries for an agent"
+        file: "./dapps/erc8004/read-feedback.js"
+        args: [agent-id, network]
+        credentials: false
+      # ⚠️ Requires --yes flag (confirmation mode by default)
+      revoke-feedback:
+        description: "Revoke your feedback to an agent"
+        file: "./dapps/erc8004/revoke-feedback.js"
+        args: [agent-id, feedback-index, yes, direct, network]
+        credentials: true
+      # ⚠️ Requires --yes flag (confirmation mode by default)
+      set-agent-wallet:
+        description: "Set agent payment wallet (requires EIP-712 signature)"
+        file: "./dapps/erc8004/set-agent-wallet.js"
+        args: [agent-id, wallet, deadline, signature, mode, yes, direct, network]
+        credentials: true
+      # ⚠️ Requires --yes flag (confirmation mode by default)
+      evaluate:
+        description: "Auto-evaluate agent (analysis + feedback)"
+        file: "./dapps/erc8004/evaluate.js"
+        args: [agent-id, yes, direct, network]
+        credentials: true

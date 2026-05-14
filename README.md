@@ -52,6 +52,7 @@ Examples of commonly used commands (see [SKILL.md](./SKILL.md) for full details)
 | `forever-moments` | NFT minting | mint, create-collection, register-up, charge |
 | `universal-trust` | Agent registration | register, endorse, publish-skills |
 | `agent-token-claimer` | Token claiming | claim, deploy, set-* commands |
+| `erc8004` | ERC-8004 Agent Registry | register, set-uri, give-feedback, revoke-feedback, set-agent-wallet, evaluate |
 
 See [SKILL.md](./SKILL.md) for the full command list and usage details.
 

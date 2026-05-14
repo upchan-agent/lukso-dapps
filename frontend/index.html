@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🆙 LUKSO Token Mint</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      min-height: 100vh;
+      color: #fff;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(90deg, #ff6b9d, #c44dff, #6e8efb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+
+    header p {
+      color: #8892b0;
+      font-size: 1.1rem;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 24px;
+      backdrop-filter: blur(10px);
+    }
+
+    .card h2 {
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+      color: #e6f1ff;
+    }
+
+    .token-type-selector {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .token-type-btn {
+      flex: 1;
+      padding: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      color: #8892b0;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .token-type-btn:hover {
+      border-color: rgba(196, 77, 255, 0.3);
+      background: rgba(196, 77, 255, 0.05);
+    }
+
+    .token-type-btn.active {
+      border-color: #c44dff;
+      background: rgba(196, 77, 255, 0.1);
+      color: #fff;
+    }
+
+    .token-type-btn .icon {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .token-type-btn .label {
+      display: block;
+      font-size: 0.85rem;
+      color: #6e8efb;
+      margin-top: 4px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #a8b2d1;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #c44dff;
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: #4a5568;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 16px;
+    }
+
+    .form-row .form-group {
+      flex: 1;
+    }
+
+    .upload-area {
+      border: 2px dashed rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .upload-area:hover {
+      border-color: #c44dff;
+      background: rgba(196, 77, 255, 0.05);
+    }
+
+    .upload-area.dragover {
+      border-color: #6e8efb;
+      background: rgba(110, 142, 251, 0.1);
+    }
+
+    .upload-area.has-file {
+      border-color: #00c9a7;
+      background: rgba(0, 201, 167, 0.05);
+    }
+
+    .upload-area .icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+
+    .upload-area .text {
+      color: #8892b0;
+      font-size: 1rem;
+    }
+
+    .upload-area .file-name {
+      color: #00c9a7;
+      font-weight: 600;
+      margin-top: 8px;
+    }
+
+    .upload-area input[type="file"] {
+      display: none;
+    }
+
+    .preview-container {
+      margin-top: 16px;
+      text-align: center;
+    }
+
+    .preview-container img {
+      max-width: 200px;
+      max-height: 200px;
+      border-radius: 8px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #c44dff, #6e8efb);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(196, 77, 255, 0.3);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .status-card {
+      display: none;
+    }
+
+    .status-card.visible {
+      display: block;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .status-item:last-child {
+      border-bottom: none;
+    }
+
+    .status-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+    }
+
+    .status-icon.pending {
+      background: rgba(255, 193, 7, 0.2);
+      color: #ffc107;
+    }
+
+    .status-icon.success {
+      background: rgba(0, 201, 167, 0.2);
+      color: #00c9a7;
+    }
+
+    .status-icon.error {
+      background: rgba(255, 82, 82, 0.2);
+      color: #ff5252;
+    }
+
+    .status-text {
+      flex: 1;
+    }
+
+    .status-text .label {
+      font-size: 0.85rem;
+      color: #8892b0;
+    }
+
+    .status-text .value {
+      font-weight: 600;
+      color: #e6f1ff;
+    }
+
+    .status-text .value a {
+      color: #6e8efb;
+      text-decoration: none;
+    }
+
+    .status-text .value a:hover {
+      text-decoration: underline;
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-top-color: #c44dff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+
+    .progress-bar .fill {
+      height: 100%;
+      background: linear-gradient(90deg, #c44dff, #6e8efb);
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+
+    .result-card {
+      display: none;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .result-card.visible {
+      display: block;
+    }
+
+    .result-card .success-icon {
+      font-size: 4rem;
+      margin-bottom: 16px;
+    }
+
+    .result-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+      color: #00c9a7;
+    }
+
+    .result-card .tx-hash {
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: #6e8efb;
+      word-break: break-all;
+      margin: 16px 0;
+      padding: 12px;
+      background: rgba(110, 142, 251, 0.1);
+      border-radius: 8px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .network-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .network-badge.mainnet {
+      background: rgba(0, 201, 167, 0.1);
+      color: #00c9a7;
+      border: 1px solid rgba(0, 201, 167, 0.3);
+    }
+
+    .network-badge.testnet {
+      background: rgba(255, 193, 7, 0.1);
+      color: #ffc107;
+      border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+
+    .network-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 4px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: #8892b0;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .tab.active {
+      background: rgba(196, 77, 255, 0.2);
+      color: #fff;
+    }
+
+    .tab:hover:not(.active) {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .info-box {
+      background: rgba(110, 142, 251, 0.1);
+      border: 1px solid rgba(110, 142, 251, 0.2);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      color: #a8b2d1;
+    }
+
+    .info-box strong {
+      color: #6e8efb;
+    }
+
+    .address-input-wrapper {
+      position: relative;
+    }
+
+    .address-input-wrapper .paste-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #8892b0;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .address-input-wrapper .paste-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      color: #4a5568;
+      font-size: 0.85rem;
+    }
+
+    footer a {
+      color: #6e8efb;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 20px 16px;
+      }
+
+      header h1 {
+        font-size: 1.8rem;
+      }
+
+      .form-row {
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .token-type-selector {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🆙 LUKSO Token Mint</h1>
+      <p>LSP7 / LSP8 トークンを簡単にミント</p>
+      <div class="network-badge testnet" id="networkBadge">
+        <span class="network-dot"></span>
+        <span id="networkName">LUKSO Testnet</span>
+      </div>
+    </header>
+
+    <!-- Step 1: Token Type -->
+    <div class="card" id="step1">
+      <h2>1️⃣ トークンタイプを選択</h2>
+      <div class="token-type-selector">
+        <button class="token-type-btn active" data-type="lsp7" onclick="selectTokenType('lsp7')">
+          <div class="icon">🪙</div>
+          <div>LSP7</div>
+          <span class="label">ファンジブルトークン</span>
+        </button>
+        <button class="token-type-btn" data-type="lsp8" onclick="selectTokenType('lsp8')">
+          <div class="icon">🖼️</div>
+          <div>LSP8</div>
+          <span class="label">NFT</span>
+        </button>
+      </div>
+
+      <div class="info-box" id="tokenInfo">
+        <strong>LSP7:</strong> 量指定可能なトークン（ERC20ライク）。分割・転送が可能。
+      </div>
+    </div>
+
+    <!-- Step 2: Token Info -->
+    <div class="card" id="step2">
+      <h2>2️⃣ トークン情報</h2>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>トークン名 *</label>
+          <input type="text" id="tokenName" placeholder="My Awesome Token">
+        </div>
+        <div class="form-group">
+          <label>シンボル *</label>
+          <input type="text" id="tokenSymbol" placeholder="MAT">
+        </div>
+      </div>
+
+      <div class="form-group" id="decimalsGroup">
+        <label>デシマル</label>
+        <input type="number" id="tokenDecimals" value="18" min="0" max="18">
+      </div>
+
+      <div class="form-group">
+        <label>初期供給量 *</label>
+        <input type="text" id="initialSupply" placeholder="1000000">
+      </div>
+
+      <div class="form-group">
+        <label>受取先アドレス</label>
+        <div class="address-input-wrapper">
+          <input type="text" id="recipientAddress" placeholder="0x... (空欄ならデプロイアドレス)">
+          <button class="paste-btn" onclick="pasteAddress()">貼付</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: Image Upload -->
+    <div class="card" id="step3">
+      <h2>3️⃣ 画像をアップロード（任意）</h2>
+      
+      <div class="upload-area" id="uploadArea">
+        <div class="icon">📁</div>
+        <div class="text">
+          クリックまたはドラッグ＆ドロップ<br>
+          <small>PNG, JPG, GIF, SVG (最大10MB)</small>
+        </div>
+        <div class="file-name hidden" id="fileName"></div>
+        <input type="file" id="fileInput" accept="image/*">
+      </div>
+
+      <div class="preview-container hidden" id="previewContainer">
+        <img id="previewImage" src="" alt="Preview">
+      </div>
+
+      <div class="progress-bar hidden" id="uploadProgress">
+        <div class="fill" id="uploadProgressFill"></div>
+      </div>
+    </div>
+
+    <!-- Step 4: Mint -->
+    <div class="card" id="step4">
+      <h2>4️⃣ ミント実行</h2>
+      
+      <button class="btn btn-primary" id="mintBtn" onclick="mintToken()">
+        🚀 ミントする
+      </button>
+
+      <div class="status-card" id="statusCard">
+        <div class="status-item" id="statusUpload" style="display:none;">
+          <div class="status-icon pending" id="statusUploadIcon">
+            <div class="spinner"></div>
+          </div>
+          <div class="status-text">
+            <div class="label">IPFSアップロード</div>
+            <div class="value" id="statusUploadText">アップロード中...</div>
+          </div>
+        </div>
+
+        <div class="status-item" id="statusDeploy" style="display:none;">
+          <div class="status-icon pending" id="statusDeployIcon">
+            <div class="spinner"></div>
+          </div>
+          <div class="status-text">
+            <div class="label">コントラクトデプロイ</div>
+            <div class="value" id="statusDeployText">デプロイ中...</div>
+          </div>
+        </div>
+
+        <div class="status-item" id="statusConfirm" style="display:none;">
+          <div class="status-icon pending" id="statusConfirmIcon">
+            <div class="spinner"></div>
+          </div>
+          <div class="status-text">
+            <div class="label">トランザクション確認</div>
+            <div class="value" id="statusConfirmText">確認中...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-card" id="resultCard">
+        <div class="success-icon">✅</div>
+        <h3>ミント完了！</h3>
+        <p>トークンが正常にデプロイされました</p>
+        <div class="tx-hash" id="txHash"></div>
+        <button class="btn btn-secondary" onclick="resetForm()">
+          🔄 新しいトークンをミント
+        </button>
+      </div>
+    </div>
+
+    <footer>
+      <p>Powered by <a href="https://lukso.network" target="_blank">LUKSO</a> | 
+         Built with ❤️ by <a href="https://twitter.com/shell_lyx" target="_blank">@shell_lyx</a></p>
+    </footer>
+  </div>
+
+  <script>
+    // State
+    let selectedTokenType = 'lsp7';
+    let selectedFile = null;
+    let ipfsUrl = '';
+
+    // Token type selection
+    function selectTokenType(type) {
+      selectedTokenType = type;
+      
+      // Update UI
+      document.querySelectorAll('.token-type-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.type === type);
+      });
+
+      // Update info
+      const infoBox = document.getElementById('tokenInfo');
+      if (type === 'lsp7') {
+        infoBox.innerHTML = '<strong>LSP7:</strong> 量指定可能なトークン（ERC20ライク）。分割・転送が可能。';
+        document.getElementById('decimalsGroup').style.display = 'block';
+      } else {
+        infoBox.innerHTML = '<strong>LSP8:</strong> 非代替性トークン（NFT）。各トークンに一意のID。';
+        document.getElementById('decimalsGroup').style.display = 'none';
+      }
+    }
+
+    // File upload handling
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileInput');
+    const fileName = document.getElementById('fileName');
+    const previewContainer = document.getElementById('previewContainer');
+    const previewImage = document.getElementById('previewImage');
+
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    uploadArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+      uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadArea.classList.remove('dragover');
+      
+      const files = e.dataTransfer.files;
+      if (files.length > 0) {
+        handleFile(files[0]);
+      }
+    });
+
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    function handleFile(file) {
+      if (!file.type.startsWith('image/')) {
+        alert('画像ファイルを選択してください');
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        alert('ファイルサイズは10MB以下にしてください');
+        return;
+      }
+
+      selectedFile = file;
+      
+      // Update UI
+      fileName.textContent = file.name;
+      fileName.classList.remove('hidden');
+      uploadArea.classList.add('has-file');
+
+      // Show preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewImage.src = e.target.result;
+        previewContainer.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Paste address
+    async function pasteAddress() {
+      try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById('recipientAddress').value = text;
+      } catch (err) {
+        console.error('Failed to read clipboard:', err);
+      }
+    }
+
+    // Upload to IPFS via Pinata
+    async function uploadToIPFS(file) {
+      const statusUpload = document.getElementById('statusUpload');
+      const statusUploadIcon = document.getElementById('statusUploadIcon');
+      const statusUploadText = document.getElementById('statusUploadText');
+      const uploadProgress = document.getElementById('uploadProgress');
+      const uploadProgressFill = document.getElementById('uploadProgressFill');
+
+      statusUpload.style.display = 'flex';
+      uploadProgress.classList.remove('hidden');
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const metadata = JSON.stringify({
+        name: file.name,
+        keyvalues: {
+          type: 'token-image',
+          tokenType: selectedTokenType
+        }
+      });
+      formData.append('pinataMetadata', metadata);
+
+      try {
+        const response = await fetch('https://api.pinata.cloud/pinning/pinFileToIPFS', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${PINATA_JWT}`
+          },
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error('IPFS upload failed');
+        }
+
+        const data = await response.json();
+        const ipfsHash = data.IpfsHash;
+
+        // Update UI
+        statusUploadIcon.className = 'status-icon success';
+        statusUploadIcon.innerHTML = '✓';
+        statusUploadText.textContent = `ipfs://${ipfsHash}`;
+        uploadProgressFill.style.width = '100%';
+
+        return `ipfs://${ipfsHash}`;
+      } catch (error) {
+        statusUploadIcon.className = 'status-icon error';
+        statusUploadIcon.innerHTML = '✗';
+        statusUploadText.textContent = 'アップロード失敗';
+        throw error;
+      }
+    }
+
+    // Mint token
+    async function mintToken() {
+      const name = document.getElementById('tokenName').value.trim();
+      const symbol = document.getElementById('tokenSymbol').value.trim();
+      const decimals = parseInt(document.getElementById('tokenDecimals').value) || 18;
+      const supply = document.getElementById('initialSupply').value.trim();
+      const recipient = document.getElementById('recipientAddress').value.trim();
+
+      // Validation
+      if (!name || !symbol || !supply) {
+        alert('必須項目を入力してください');
+        return;
+      }
+
+      const mintBtn = document.getElementById('mintBtn');
+      mintBtn.disabled = true;
+      mintBtn.innerHTML = '<div class="spinner"></div> 処理中...';
+
+      document.getElementById('statusCard').classList.add('visible');
+
+      try {
+        // Upload image if selected
+        if (selectedFile) {
+          ipfsUrl = await uploadToIPFS(selectedFile);
+        }
+
+        // Deploy contract
+        const statusDeploy = document.getElementById('statusDeploy');
+        const statusDeployIcon = document.getElementById('statusDeployIcon');
+        const statusDeployText = document.getElementById('statusDeployText');
+        
+        statusDeploy.style.display = 'flex';
+        statusDeployText.textContent = 'デプロイ中...';
+
+        // Here you would call your backend API to deploy the contract
+        // For now, we'll simulate the deployment
+        const deployData = {
+          type: selectedTokenType,
+          name: name,
+          symbol: symbol,
+          decimals: selectedTokenType === 'lsp7' ? decimals : undefined,
+          supply: supply,
+          recipient: recipient || undefined,
+          image: ipfsUrl || undefined
+        };
+
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Update UI
+        statusDeployIcon.className = 'status-icon success';
+        statusDeployIcon.innerHTML = '✓';
+        statusDeployText.textContent = 'デプロイ完了';
+
+        // Show result
+        const statusConfirm = document.getElementById('statusConfirm');
+        const statusConfirmIcon = document.getElementById('statusConfirmIcon');
+        const statusConfirmText = document.getElementById('statusConfirmText');
+        
+        statusConfirm.style.display = 'flex';
+        statusConfirmIcon.className = 'status-icon success';
+        statusConfirmIcon.innerHTML = '✓';
+        statusConfirmText.textContent = '確認完了';
+
+        // Show result card
+        document.getElementById('resultCard').classList.add('visible');
+        document.getElementById('txHash').textContent = 'Tx: 0x1234...5678 (シミュレーション)';
+
+      } catch (error) {
+        console.error('Mint error:', error);
+        alert('エラーが発生しました: ' + error.message);
+      } finally {
+        mintBtn.disabled = false;
+        mintBtn.innerHTML = '🚀 ミントする';
+      }
+    }
+
+    // Reset form
+    function resetForm() {
+      document.getElementById('tokenName').value = '';
+      document.getElementById('tokenSymbol').value = '';
+      document.getElementById('tokenDecimals').value = '18';
+      document.getElementById('initialSupply').value = '';
+      document.getElementById('recipientAddress').value = '';
+      
+      selectedFile = null;
+      ipfsUrl = '';
+      
+      document.getElementById('fileName').classList.add('hidden');
+      document.getElementById('previewContainer').classList.add('hidden');
+      document.getElementById('uploadArea').classList.remove('has-file');
+      document.getElementById('uploadProgress').classList.add('hidden');
+      
+      document.getElementById('statusCard').classList.remove('visible');
+      document.getElementById('resultCard').classList.remove('visible');
+      
+      document.querySelectorAll('.status-item').forEach(item => {
+        item.style.display = 'none';
+      });
+    }
+
+    // Initialize
+    selectTokenType('lsp7');
+  </script>
+</body>
+</html>

@@ -170,6 +170,20 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 | `/lyx agent-token-claimer:decode-codeword` | Decode codeword from existing on-chain claims | ❌ |
 | `/lyx agent-token-claimer:auto-check` | Scan all drops for eligibility (for cron) | ❌ |
 
+### ERC-8004 Agent Registry (`erc8004`)
+
+| Command | Description | TX |
+|---|---|---|
+| `/lyx erc8004:register` | Register your UP as an AI Agent | ✅ |
+| `/lyx erc8004:info` | Check agent registration details | ❌ |
+| `/lyx erc8004:list` | List all registered agents | ❌ |
+| `/lyx erc8004:set-uri` | Update agent metadata (name, description, image) | ✅ |
+| `/lyx erc8004:give-feedback` | Give feedback / rating to an agent | ✅ |
+| `/lyx erc8004:read-feedback` | Read feedback entries for an agent | ❌ |
+| `/lyx erc8004:revoke-feedback` | Revoke your feedback to an agent | ✅ |
+| `/lyx erc8004:set-agent-wallet` | Set agent payment wallet (requires EIP-712 signature) | ✅ |
+| `/lyx erc8004:evaluate` | Auto-evaluate agent (analysis + feedback) | ✅ |
+
 ---
 
 ## Usage
@@ -370,6 +384,42 @@ TX column: ✅ = writes to the blockchain (irreversible), ❌ = read-only
 ```
 
 > **Note**: `check` auto-decodes codewords if existing claims exist. Use `decode-codeword` for detailed analysis.
+
+---
+
+### ERC-8004 Agent Registry (`erc8004`)
+
+```bash
+# Register your UP as an AI Agent
+/lyx erc8004:register --name "MyAgent" --description "My AI agent" --image ipfs://... --endpoint https://...
+
+# Check registration info
+/lyx erc8004:info --address 0x...
+/lyx erc8004:info --agent-id 1
+
+# List all registered agents
+/lyx erc8004:list --limit 20
+
+# Update agent metadata
+/lyx erc8004:set-uri --agent-id 1 --name "NewName" --description "Updated description"
+
+# Give feedback
+/lyx erc8004:give-feedback --agent-id 1 --value 85 --tag1 helpful --tag2 fast
+
+# Read feedback
+/lyx erc8004:read-feedback --agent-id 1
+
+# Revoke feedback
+/lyx erc8004:revoke-feedback --agent-id 1 --feedback-index 0
+
+# Set agent payment wallet
+/lyx erc8004:set-agent-wallet --agent-id 1 --wallet 0x... --deadline 1712345678
+
+# Auto-evaluate an agent
+/lyx erc8004:evaluate --agent-id 1
+```
+
+> **Note**: All write commands (register, set-uri, give-feedback, revoke-feedback, set-agent-wallet, evaluate) require `--yes` flag for execution.
 
 ---
 
